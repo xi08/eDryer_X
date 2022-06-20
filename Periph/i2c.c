@@ -13,12 +13,12 @@
  */
 void i2cInit(void)
 {
-    GPIO_InitTypeDef i2cGPIO;
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
-    i2cGPIO.GPIO_Pin = GPIO_Pin_11 | GPIO_Pin_12;
-    i2cGPIO.GPIO_Speed = GPIO_Speed_10MHz;
-    i2cGPIO.GPIO_Mode = GPIO_Mode_Out_OD;
-    GPIO_Init(GPIOC, &i2cGPIO);
+    GPIO_InitTypeDef initStruct_gpio;
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE); // 使能GPIOC时钟
+    initStruct_gpio.GPIO_Pin = GPIO_Pin_11 | GPIO_Pin_12; // 设置引脚号
+    initStruct_gpio.GPIO_Speed = GPIO_Speed_10MHz; // 设置输出速度
+    initStruct_gpio.GPIO_Mode = GPIO_Mode_Out_OD; // 设置普通开漏输出
+    GPIO_Init(GPIOC, &initStruct_gpio); // 配置引脚
 }
 
 /**
@@ -28,10 +28,10 @@ void i2cInit(void)
 void i2cOutputMode(void)
 {
     GPIO_InitTypeDef i2cGPIO;
-    i2cGPIO.GPIO_Pin = GPIO_Pin_11;
-    i2cGPIO.GPIO_Speed = GPIO_Speed_10MHz;
-    i2cGPIO.GPIO_Mode = GPIO_Mode_Out_OD;
-    GPIO_Init(GPIOC, &i2cGPIO);
+    i2cGPIO.GPIO_Pin = GPIO_Pin_11;// 设置引脚号
+    i2cGPIO.GPIO_Speed = GPIO_Speed_10MHz;// 设置输出速度
+    i2cGPIO.GPIO_Mode = GPIO_Mode_Out_PP;// 设置普通开漏输出
+    GPIO_Init(GPIOC, &i2cGPIO);// 配置引脚
 }
 
 /**
@@ -41,10 +41,9 @@ void i2cOutputMode(void)
 void i2cInputMode(void)
 {
     GPIO_InitTypeDef i2cGPIO;
-    i2cGPIO.GPIO_Pin = GPIO_Pin_11;
-    i2cGPIO.GPIO_Speed = GPIO_Speed_10MHz;
-    i2cGPIO.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-    GPIO_Init(GPIOC, &i2cGPIO);
+    i2cGPIO.GPIO_Pin = GPIO_Pin_11;// 设置引脚号
+    i2cGPIO.GPIO_Mode = GPIO_Mode_IPU;// 设置浮空输入
+    GPIO_Init(GPIOC, &i2cGPIO);// 配置引脚
 }
 
 /**

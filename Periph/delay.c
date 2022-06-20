@@ -12,7 +12,7 @@ void delay1ms(uint32_t t)
     uint32_t delay1msStartTimestamp = sysTime, delayTime = t;
     if (delayTime < 0xffffffff)
         delayTime++;
-    while (sysTime - delay1msStartTimestamp < delayTime)
+    while (sysTime - delay1msStartTimestamp < delayTime) // 等待
         ;
 }
 
@@ -39,9 +39,9 @@ void delay2us(uint8_t t)
 {
     while (t--)
     {
-        TIM_ClearFlag(TIM6, TIM_FLAG_Update);
-        TIM_Cmd(TIM6, ENABLE);
-        while (!TIM_GetFlagStatus(TIM6, TIM_FLAG_Update))
+        TIM_ClearFlag(TIM6, TIM_FLAG_Update); // 清空TIM6更新标记
+        TIM_Cmd(TIM6, ENABLE); // 使能TIM6
+        while (!TIM_GetFlagStatus(TIM6, TIM_FLAG_Update)) // 等待
             ;
     }
 }
