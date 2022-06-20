@@ -60,7 +60,7 @@ void i2cReset(void)
         i2cDelay();
         i2cSCLOutput(0);
         i2cDelay();
-        if (!i2cSDAInput())
+        if (i2cSDAInput())
             return;
     }
 }
