@@ -16,10 +16,10 @@
  */
 typedef enum
 {
-    key_S0, // 抬起
+    key_S0, // 等待按下
     key_S1, // 短按
     key_S2, // 按下
-    key_S3, // 长按
+    key_S3, // 等待抬起
 } keyState_enum;
 extern keyState_enum keyState[keyNum];
 

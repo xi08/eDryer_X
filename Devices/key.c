@@ -20,21 +20,18 @@ keyState_enum keyState[keyNum];
  */
 void keyInit(void)
 {
-    GPIO_InitTypeDef keyStruct_GPIO;
+    GPIO_InitTypeDef initStruct_GPIO;
 
-    // GPIO时钟
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOC, ENABLE);
+    /* 时钟设置 */
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE); // 使能GPIOA时钟
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE); // 使能GPIOC时钟
 
-    // 设置浮空输入
-    keyStruct_GPIO.GPIO_Mode = GPIO_Mode_IPU;
-
-    // 配置Key0
-    keyStruct_GPIO.GPIO_Pin = GPIO_Pin_5;
-    GPIO_Init(GPIOC, &keyStruct_GPIO);
-
-    // 配置Key1
-    keyStruct_GPIO.GPIO_Pin = GPIO_Pin_15;
-    GPIO_Init(GPIOA, &keyStruct_GPIO);
+    /* GPIO配置 */
+    initStruct_GPIO.GPIO_Mode = GPIO_Mode_IPU; // 设置上拉输入
+    initStruct_GPIO.GPIO_Pin = GPIO_Pin_5;     // 设置引脚号
+    GPIO_Init(GPIOC, &initStruct_GPIO);        // 配置引脚
+    initStruct_GPIO.GPIO_Pin = GPIO_Pin_15;    // 设置引脚号
+    GPIO_Init(GPIOA, &initStruct_GPIO);        // 配置引脚
 }
 /**
  * @brief 更新按键信息
@@ -56,11 +53,12 @@ void updateKey(void)
         {
             switch (keyState[i])
             {
-            case key_S0:
-                keyState[i] = key_S2;
-                keyPressTimestamp[i] = sysTime;
+            case key_S0: // 处于等待按下状态
+            {
+                keyState[i] = key_S2;           // 状态切换
+                keyPressTimestamp[i] = sysTime; // 更新时间戳
                 break;
-
+            }
             default:
                 break;
             }
@@ -70,18 +68,21 @@ void updateKey(void)
         {
             switch (keyState[i])
             {
-            case key_S2:
-                if (sysTime - keyPressTimestamp[i] >= keyLongPressTime)
-                    keyState[i] = key_S3;
-                else if (sysTime - keyPressTimestamp[i] >= keyShortPressTime)
-                    keyState[i] = key_S1;
+            case key_S2: // 处于等待抬起状态
+            {
+                if (sysTime - keyPressTimestamp[i] >= keyLongPressTime)       // 长按检测
+                    keyState[i] = key_S3;                                     // 状态切换
+                else if (sysTime - keyPressTimestamp[i] >= keyShortPressTime) // 短按检测
+                    keyState[i] = key_S1;                                     // 状态切换
                 else
-                    keyState[i] = key_S0;
+                    keyState[i] = key_S0; // 状态清除
                 break;
-
-            default:
-                keyState[i] = key_S0;
+            }
+            default: // 非法状态
+            {
+                keyState[i] = key_S0; // 状态清除
                 break;
+            }
             }
         }
     }
