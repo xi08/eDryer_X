@@ -4,8 +4,8 @@
 #include "bitband_io.h"
 #include "delay.h"
 
-#define DHT11_In() (PAi(0))
-#define DHT11_Out(x) (PAo(0) = x)
+#define DHT11_In() (PAxIn(0))
+#define DHT11_Out(x) (PAxOut(0) = x)
 
 /**
  * @brief DHT11-温度数据

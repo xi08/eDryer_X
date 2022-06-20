@@ -1,5 +1,6 @@
 // code = utf-8
 
+#include "at24c02.h"
 #include "delay.h"
 #include "flash_rom.h"
 #include "key.h"
@@ -12,15 +13,18 @@
 
 uint8_t led1Status;
 uint16_t flashCache[2];
+uint8_t e2promCache;
 #define flashSaveAddr 0x08004000
 
 int main()
 {
     sysTimeInit();
+    delay2us_init();
     uartInit(115200);
 
     led1Init();
     keyInit();
+    at24c02_init();
 
     printf("mini stm32f1 uart test");
     while (1)
@@ -29,6 +33,7 @@ int main()
         keyProg();
         flashCache[0] = sysTime >> 16;
         flashCache[1] = sysTime;
+        e2promCache = sysTime / 1000;
         led1Status ^= 1;
         led1Control(led1Status);
         delay1ms(50);
@@ -45,16 +50,17 @@ void keyProg(void)
     {
     case key_S1: // 短按
     {
-        printf("key0S");
+        printf("key0S\n");
         flashROM_write(flashSaveAddr, flashCache, 2);
-        printf("Write: %u\n", ((uint32_t)(flashCache[0] << 16) + flashCache[1]));
+        printf("Flash Write: %u\n", ((uint32_t)(flashCache[0] << 16) + flashCache[1]));
         keyState[0] = key_S0;
         break;
     }
     case key_S3: // 长按
     {
-        printf("key0L");
-
+        printf("key0L\n");
+        at24c02_write(0, e2promCache);
+        printf("E2PROM Write: %u\n", e2promCache);
         keyState[0] = key_S0;
         break;
     }
@@ -66,15 +72,17 @@ void keyProg(void)
     {
     case key_S1: // 短按
     {
-        printf("key1S");
+        printf("key1S\n");
         flashROM_read(flashSaveAddr, flashCache, 2);
-        printf("Read: %u\n", ((uint32_t)(flashCache[0] << 16) + flashCache[1]));
+        printf("Flash Read: %u\n", ((uint32_t)(flashCache[0] << 16) + flashCache[1]));
         keyState[1] = key_S0;
         break;
     }
     case key_S3: // 长按
     {
-        printf("key1L");
+        printf("key1L\n");
+        e2promCache = at24c02_read(0);
+        printf("E2PROM Read: %u\n", e2promCache);
         keyState[1] = key_S0;
         break;
     }

@@ -23,7 +23,7 @@ void delay1ms(uint32_t t)
 void delay2us_init(void)
 {
     TIM_TimeBaseInitTypeDef initStruct_TIM;
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE); // 开启TIM4
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE); // 开启TIM6
     initStruct_TIM.TIM_Period = 1;                       // 设置周期为2
     initStruct_TIM.TIM_Prescaler = 71;                   // 设置为72分频
     initStruct_TIM.TIM_CounterMode = TIM_CounterMode_Up; // 设置为向上计数
@@ -43,5 +43,6 @@ void delay2us(uint8_t t)
         TIM_Cmd(TIM6, ENABLE); // 使能TIM6
         while (!TIM_GetFlagStatus(TIM6, TIM_FLAG_Update)) // 等待
             ;
+        
     }
 }

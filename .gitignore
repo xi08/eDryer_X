@@ -54,6 +54,7 @@
 *.sct
 *.sfd
 *.sfr
+*.scvd
 
 # Misc
 *.tra
