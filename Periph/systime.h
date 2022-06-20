@@ -4,7 +4,7 @@
 #include "stm32f10x_conf.h"
 
 /**
- * @brief 全局毫秒计时计数器
+ * @brief 毫秒时基
  *
  */
 extern volatile uint32_t sysTime;

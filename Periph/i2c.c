@@ -17,7 +17,7 @@ void i2cInit(void)
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
     i2cGPIO.GPIO_Pin = GPIO_Pin_11 | GPIO_Pin_12;
     i2cGPIO.GPIO_Speed = GPIO_Speed_10MHz;
-    i2cGPIO.GPIO_Mode = GPIO_Mode_Out_PP;
+    i2cGPIO.GPIO_Mode = GPIO_Mode_Out_OD;
     GPIO_Init(GPIOC, &i2cGPIO);
 }
 
@@ -30,7 +30,7 @@ void i2cOutputMode(void)
     GPIO_InitTypeDef i2cGPIO;
     i2cGPIO.GPIO_Pin = GPIO_Pin_11;
     i2cGPIO.GPIO_Speed = GPIO_Speed_10MHz;
-    i2cGPIO.GPIO_Mode = GPIO_Mode_Out_PP;
+    i2cGPIO.GPIO_Mode = GPIO_Mode_Out_OD;
     GPIO_Init(GPIOC, &i2cGPIO);
 }
 
@@ -43,7 +43,7 @@ void i2cInputMode(void)
     GPIO_InitTypeDef i2cGPIO;
     i2cGPIO.GPIO_Pin = GPIO_Pin_11;
     i2cGPIO.GPIO_Speed = GPIO_Speed_10MHz;
-    i2cGPIO.GPIO_Mode = GPIO_Mode_IPD;
+    i2cGPIO.GPIO_Mode = GPIO_Mode_IN_FLOATING;
     GPIO_Init(GPIOC, &i2cGPIO);
 }
 

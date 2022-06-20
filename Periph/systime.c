@@ -2,7 +2,7 @@
 #include "sysTime.h"
 
 /**
- * @brief 全局毫秒系统时基计数器
+ * @brief 毫秒时基
  *
  */
 volatile uint32_t sysTime;
