@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "systime.h": "c",
-        "i2c_hs.h": "c"
+        "i2c_hs.h": "c",
+        "i2c.h": "c"
     }
 }

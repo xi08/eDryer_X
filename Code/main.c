@@ -1,12 +1,15 @@
 // code = utf-8
 
-#include "at24c02.h"
 #include "delay.h"
+#include "systime.h"
+
+#include "i2c.h"
+#include "uart.h"
+
+#include "at24c02.h"
 #include "flash_rom.h"
 #include "key.h"
 #include "led.h"
-#include "systime.h"
-#include "uart.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +27,7 @@ int main()
 
     led1Init();
     keyInit();
-    at24c02_init();
+    i2cInit();
 
     printf("mini stm32f1 uart test");
     while (1)
