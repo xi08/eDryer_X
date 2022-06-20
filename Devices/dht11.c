@@ -4,132 +4,97 @@
 #include "bitband_io.h"
 #include "delay.h"
 
-#define DHT11_In() (PAxIn(0))
-#define DHT11_Out(x) (PAxOut(0) = x)
+#define dht11DataIn PAxIn(dht11DataPin)
+#define dht11DataOut PAxOut(dht11DataPin)
+
+int8_t dht11_tem;
+int8_t dht11_hum;
 
 /**
- * @brief DHT11-温度数据
- *
+ * @brief 初始化DHT11
+ * 
  */
-uint8_t dht11_temDataInt, dht11_temDataDec;
-
-/**
- * @brief DHT11-湿度数据
- *
- */
-uint8_t dht11_humDataInt, dht11_humDataDec;
-
-/**
- * @brief DHT11-输入模式
- *
- */
-void DHT11_OutputMode(void)
+void dht11Init(void)
 {
-    GPIO_InitTypeDef DHT11_GPIO;
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE); // 开启时钟
-    DHT11_GPIO.GPIO_Mode = GPIO_Mode_Out_PP;              // 推挽输出
-    DHT11_GPIO.GPIO_Speed = GPIO_Speed_50MHz;             // 频率50Mhz
-    DHT11_GPIO.GPIO_Pin = GPIO_Pin_0;                     // 设置引脚
-    GPIO_Init(GPIOA, &DHT11_GPIO);                        // 初始化引脚
+    GPIO_InitTypeDef initStruct_gpio;
+
+    /* 时钟设置 */
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE); // 使能GPIOA时钟
+
+    /* GPIO配置 */
+    initStruct_gpio.GPIO_Pin = 1 << dht11DataPin;  // 设置引脚号
+    initStruct_gpio.GPIO_Speed = GPIO_Speed_50MHz; // 设置输出速度
+    initStruct_gpio.GPIO_Mode = GPIO_Mode_Out_OD;  // 设置普通开漏输出
+    GPIO_Init(GPIOA, &initStruct_gpio);            // 配置引脚
+
+    /* 电平设置 */
+    dht11DataOut = 1; // 释放总线
 }
 
 /**
- * @brief DHT11-输出模式
- *
- */
-void DHT11_InputMode(void)
-{
-    GPIO_InitTypeDef DHT11_GPIO;
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE); // 开启时钟
-    DHT11_GPIO.GPIO_Mode = GPIO_Mode_IN_FLOATING;         // 浮空输入
-    DHT11_GPIO.GPIO_Speed = GPIO_Speed_50MHz;             // 频率50Mhz
-    DHT11_GPIO.GPIO_Pin = GPIO_Pin_0;                     // 设置引脚
-    GPIO_Init(GPIOA, &DHT11_GPIO);                        // 初始化引脚
-}
-
-/**
- * @brief DHT11-初始化设备
- *
- */
-void DHT11_Init(void)
-{
-    /* GPIO设置 */
-    GPIO_InitTypeDef DHT11_GPIO;
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE); // 开启时钟
-    DHT11_GPIO.GPIO_Mode = GPIO_Mode_Out_PP;              // 推挽输出
-    DHT11_GPIO.GPIO_Speed = GPIO_Speed_50MHz;             // 频率50Mhz
-    DHT11_GPIO.GPIO_Pin = GPIO_Pin_0;                     // 设置引脚
-    GPIO_Init(GPIOA, &DHT11_GPIO);                        // 初始化引脚
-}
-/**
- * @brief DHT11-发送起始信号并检测响应
+ * @brief DHT11发送开始信号并检测设备
  *
  * @return uint8_t 错误码
  */
-uint8_t DHT11_Start(void)
+uint8_t dht11START(void)
 {
-    DHT11_OutputMode(); // 输出模式
-    DHT11_Out(0);       // 拉低
-    delay1ms(20);       // 等待20ms
-    DHT11_InputMode();  // 输入模式
-    delay2us(20);       // 等待40us
-    if (DHT11_In())     // 响应(低电平部分)检测
-        return 1;       // 电平错误，退出
-    delay2us(25);       // 等待50us
-    while (DHT11_In())  // 等待响应(高电平部分)结束
+    dht11DataOut = 0;    // 拉低总线，发出检测信号
+    delay1ms(20);        // 稳定电平
+    dht11DataOut = 1;    // 释放总线
+    delay2us(20);        // 等待电平稳定中点
+    if (dht11DataIn)     // DHT11无响应信号
+        return 1;        // 报错弹出
+    while (!dht11DataIn) // 等待DHT11释放总线
         ;
-    return 0;
+    return 0; // 正常退出
 }
+
 /**
- * @brief DHT11-接收单字节
+ * @brief DHT11接收单字节
  *
- * @return uint8_t 接收的数据
+ * @return uint8_t 读出数据
  */
-uint8_t DHT11_ReadByte(void)
+uint8_t dht11ReadByte(void)
 {
     uint8_t i;
-    uint8_t dat; // 数据暂存
+    uint8_t rData;
+
     for (i = 0; i < 8; i++)
     {
-        dat <<= 1;
-        delay2us(39);      // 等待54+24us
-        dat |= DHT11_In(); // 若仍为高电平，则为信号'1'
-        while (DHT11_In()) // 等待下次下拉
+
+        while (dht11DataIn) // 等待总线被占用
             ;
+        rData <<= 1;         // 数据左移
+        while (!dht11DataIn) // 等待数字信号低电平结束
+            ;
+        delay2us(18);         // 等待到数字信号'1'高电平的中点
+        rData |= dht11DataIn; // 未被拉低则是信号'1'，被拉低则上一位信号是'0'
     }
-    return dat;
+
+    return rData;
 }
 
-/**
- * @brief DHT11-读出数据
- *
- * @return uint8_t 错误码
- */
-uint8_t DHT11_Read(void)
+uint8_t dht11Read(void)
 {
     uint8_t i;
     uint8_t dat[4];     // 数据
     uint8_t checkSum;   // 校验和
-    uint8_t datSum = 0; // 数据和
 
-    /* 读出数据 */
-    if (DHT11_Start())
+    /* 数据读出 */
+    if (dht11START()) // 发送开始信号并检测设备
         return 1;
     for (i = 0; i < 4; i++)
-    {
-        dat[i] = DHT11_ReadByte();
-        datSum += dat[i];
-    }
+        dat[i] = dht11ReadByte();
+    checkSum = dht11ReadByte();
 
-    /* 进行校验 */
-    checkSum = DHT11_ReadByte();
-    if (checkSum != datSum)
-        return 1;
+    /* 数据校验 */
+    if (checkSum != (dat[0] + dat[1] + dat[2] + dat[3]))
+        return 2;
 
-    /* 数据格式转换 */
-    dht11_temDataInt = dat[0];
-    dht11_temDataDec = dat[1];
-    dht11_humDataInt = dat[2];
-    dht11_humDataDec = dat[3];
+    /* 数据转换 */
+    dht11_hum = (int8_t)dat[0]; // 湿度，5~95
+    dht11_tem = (int8_t)dat[2]; // 温度，-20~60
+    if (dat[3] & 128)           //温度为负
+        dht11_tem *= (-1);
     return 0;
 }

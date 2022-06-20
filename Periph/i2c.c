@@ -1,3 +1,4 @@
+// code = utf-8
 #include "i2c.h"
 #include "bitband_io.h"
 #include "delay.h"
@@ -136,7 +137,7 @@ void i2cSend(uint8_t sData)
 uint8_t i2cRead(void)
 {
     uint8_t i;
-    uint8_t rData = 0;
+    uint8_t rData;
 
     for (i = 0; i < 8; i++)
     {

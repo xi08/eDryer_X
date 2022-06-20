@@ -89,7 +89,6 @@ void keyProg(void)
         keyState[1] = key_S0;
         break;
     }
-
     default:
         break;
     }
