@@ -1,5 +1,8 @@
 // code = utf-8
 
+#include "stm32f10x.h"
+#include "stm32f10x_conf.h"
+
 #include "delay.h"
 #include "systime.h"
 
@@ -14,22 +17,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-uint8_t led1Status;
 uint16_t flashCache[2];
 uint8_t e2promCache;
 #define flashSaveAddr 0x08004000
 
 int main()
 {
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+
     sysTimeInit();
     delay1us_init();
+
     uartInit(115200);
 
-    led1Init();
-    keyInit();
     i2cInit();
 
-    printf("mini stm32f1 uart test");
+    ledInit();
+    keyInit();
+
+    printf("%s\n%s:%s,%s\n", "MiniSTM32 V3.1", "Compiled in", __TIME__, __DATE__);
+    led0Pin = 1;
+
+    delay1ms(500);
     while (1)
     {
         updateKey();
@@ -37,8 +46,8 @@ int main()
         flashCache[0] = sysTime >> 16;
         flashCache[1] = sysTime;
         e2promCache = sysTime / 1000;
-        led1Status ^= 1;
-        led1Control(led1Status);
+        led0Pin ^= 1;
+        led1Pin ^= 1;
         delay1ms(50);
     }
 }

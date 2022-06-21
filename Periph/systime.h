@@ -1,6 +1,8 @@
 // code = utf-8
 #ifndef __sysTime_h
 #define __sysTime_h
+
+#include "stm32f10x.h"
 #include "stm32f10x_conf.h"
 
 /**

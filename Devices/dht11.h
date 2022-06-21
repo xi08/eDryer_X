@@ -1,6 +1,8 @@
 // code = utf-8
 #ifndef __dht11_h
 #define __dht11_h
+
+#include "stm32f10x.h"
 #include "stm32f10x_conf.h"
 
 #define dht11DataPin 0

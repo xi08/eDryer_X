@@ -1,6 +1,8 @@
 // code = utf-8
 #ifndef __uart_h
 #define __uart_h
+
+#include "stm32f10x.h"
 #include "stm32f10x_conf.h"
 
 #define uartRxBufferSize 16

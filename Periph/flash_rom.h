@@ -1,7 +1,8 @@
 // code = utf-8
-
 #ifndef __flashrom_h
 #define __flashrom_h
+
+#include "stm32f10x.h"
 #include "stm32f10x_conf.h"
 #include <stddef.h>
 

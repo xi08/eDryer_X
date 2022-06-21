@@ -1,6 +1,8 @@
 // code = utf-8
 #ifndef __key_h
 #define __key_h
+
+#include "stm32f10x.h"
 #include "stm32f10x_conf.h"
 
 // 按键数量

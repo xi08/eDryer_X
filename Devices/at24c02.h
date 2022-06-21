@@ -2,6 +2,7 @@
 #ifndef at24c02_h
 #define at24c02_h
 
+#include "stm32f10x.h"
 #include "stm32f10x_conf.h"
 
 #define at24c02_addr 0xa0

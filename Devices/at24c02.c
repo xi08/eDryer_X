@@ -12,15 +12,17 @@
  */
 void at24c02_write(uint8_t addr, uint8_t data)
 {
-    i2cSTART();                // 发送启动信号
-    i2cSend(at24c02_addr | 0); // 发送器件写地址
-    i2cReadACK();              // 获取器件应答
-    i2cSend(addr);             // 发送写入地址
-    i2cReadACK();              // 获取器件应答
-    i2cSend(data);             // 发送写入数据
-    i2cReadACK();              // 获取器件应答
-    i2cSTOP();                 // 发送结束信号
-    delay1ms(6);               // 等待器件内部写入
+    i2cMasterModeEnable();             // 进入i2c主机模式
+    i2cSTART();                        // 发送启动信号
+    i2cSend(at24c02_addr | i2cAddrWR); // 发送器件写地址
+    i2cReadACK();                      // 获取器件应答
+    i2cSend(addr);                     // 发送写入地址
+    i2cReadACK();                      // 获取器件应答
+    i2cSend(data);                     // 发送写入数据
+    i2cReadACK();                      // 获取器件应答
+    i2cSTOP();                         // 发送结束信号
+    delay1ms(6);                       // 等待器件内部写入
+    i2cMasterModeDisable();            // 退出i2c主机模式
 }
 
 /**
@@ -33,18 +35,20 @@ uint8_t at24c02_read(uint8_t addr)
 {
     uint8_t data;
 
-    i2cSTART();                // 发送启动信号
-    i2cSend(at24c02_addr | 0); // 发送器件写地址
-    i2cReadACK();              // 获取器件应答
-    i2cSend(addr);             // 发送读出地址
-    i2cReadACK();              // 获取器件应答
+    i2cMasterModeEnable();             // 进入i2c主机模式
+    i2cSTART();                        // 发送启动信号
+    i2cSend(at24c02_addr | i2cAddrWR); // 发送器件写地址
+    i2cReadACK();                      // 获取器件应答
+    i2cSend(addr);                     // 发送读出地址
+    i2cReadACK();                      // 获取器件应答
 
-    i2cSTART();                // 第二次发送启动信号
-    i2cSend(at24c02_addr | 1); // 发送器件读地址
-    i2cReadACK();              // 获取器件应答
-    data = i2cRead();          // 获取读出数据
-    i2cACK();                  // 发送应答信号
-    i2cSTOP();                 // 发送结束信号
+    i2cSTART();                        // 第二次发送启动信号
+    i2cSend(at24c02_addr | i2cAddrRD); // 发送器件读地址
+    i2cReadACK();                      // 获取器件应答
+    data = i2cRead();                  // 获取读出数据
+    i2cACK();                          // 发送应答信号
+    i2cSTOP();                         // 发送结束信号
+    i2cMasterModeDisable();            // 退出i2c主机模式
 
     return data;
 }
@@ -58,18 +62,20 @@ uint8_t at24c02_read(uint8_t addr)
  */
 void at24c02_writePage(uint8_t addr, uint8_t *data, uint8_t n)
 {
-    i2cSTART();                // 发送启动信号
-    i2cSend(at24c02_addr | 0); // 发送器件写地址
-    i2cReadACK();              // 获取器件应答
-    i2cSend(addr);             // 发送写入首地址
-    i2cReadACK();              // 获取器件应答
-    while (n--)                // 写入计数
+    i2cMasterModeEnable();             // 进入i2c主机模式
+    i2cSTART();                        // 发送启动信号
+    i2cSend(at24c02_addr | i2cAddrWR); // 发送器件写地址
+    i2cReadACK();                      // 获取器件应答
+    i2cSend(addr);                     // 发送写入首地址
+    i2cReadACK();                      // 获取器件应答
+    while (n--)                        // 写入计数
     {
         i2cSend(*data++); // 发送写入数据
         i2cReadACK();     // 获取器件应答
     }
-    i2cSTOP();   // 发送结束信号
-    delay1ms(6); // 等待器件内部写入
+    i2cSTOP();              // 发送结束信号
+    delay1ms(6);            // 等待器件内部写入
+    i2cMasterModeDisable(); // 退出i2c主机模式
 }
 
 /**
@@ -81,16 +87,17 @@ void at24c02_writePage(uint8_t addr, uint8_t *data, uint8_t n)
  */
 void at24c02_readPage(uint8_t addr, uint8_t *data, uint8_t n)
 {
-    i2cSTART();                // 发送启动信号
-    i2cSend(at24c02_addr | 0); // 发送器件写地址
-    i2cReadACK();              // 获取器件应答
-    i2cSend(addr);             // 发送读出首地址
-    i2cReadACK();              // 获取器件应答
+    i2cMasterModeEnable();             // 进入i2c主机模式
+    i2cSTART();                        // 发送启动信号
+    i2cSend(at24c02_addr | i2cAddrWR); // 发送器件写地址
+    i2cReadACK();                      // 获取器件应答
+    i2cSend(addr);                     // 发送读出首地址
+    i2cReadACK();                      // 获取器件应答
 
-    i2cSTART();                // 第二次发送启动信号
-    i2cSend(at24c02_addr | 1); // 发送器件读地址
-    i2cReadACK();              // 获取器件应答
-    while (n--)                // 读取计数
+    i2cSTART();                        // 第二次发送启动信号
+    i2cSend(at24c02_addr | i2cAddrRD); // 发送器件读地址
+    i2cReadACK();                      // 获取器件应答
+    while (n--)                        // 读取计数
     {
         *data++ = i2cRead(); // 获取读出数据
         if (n)
@@ -98,5 +105,6 @@ void at24c02_readPage(uint8_t addr, uint8_t *data, uint8_t n)
         else
             i2cNACK(); // 发送非应答信号，表示已读完
     }
-    i2cSTOP(); // 发送结束信号
+    i2cSTOP();              // 发送结束信号
+    i2cMasterModeDisable(); // 退出i2c主机模式
 }
