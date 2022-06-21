@@ -3,7 +3,7 @@
 #include "led.h"
 #include "bitband_io.h"
 
-#define led1PinOut PDxOut(2)
+#define led1Pin PDxOut(2)
 
 /**
  * @brief 初始化绿色LED1

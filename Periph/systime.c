@@ -15,5 +15,5 @@ void sysTimeInit(void)
 {
     sysTime = 0;                            // 清空计数器值
     SysTick_Config(SystemCoreClock / 1000); // 配置SysTick为1ms产生一次中断
-    NVIC_SetPriority(SysTick_IRQn, 1);      // 配置SysTick为最高中断优先
+    NVIC_SetPriority(SysTick_IRQn, 0);      // 配置SysTick优先于任何非内核中断
 }
