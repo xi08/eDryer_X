@@ -41,7 +41,7 @@ uint8_t dht11START(void)
     dht11DataOut = 0;    // 拉低总线，发出检测信号
     delay1ms(20);        // 稳定电平
     dht11DataOut = 1;    // 释放总线
-    delay2us(20);        // 等待电平稳定中点
+    delay1us(40);        // 等待电平稳定中点
     if (dht11DataIn)     // DHT11无响应信号
         return 1;        // 报错弹出
     while (!dht11DataIn) // 等待DHT11释放总线
@@ -67,7 +67,7 @@ uint8_t dht11ReadByte(void)
         rData <<= 1;         // 数据左移
         while (!dht11DataIn) // 等待数字信号低电平结束
             ;
-        delay2us(18);         // 等待到数字信号'1'高电平的中点
+        delay1us(36);         // 等待到数字信号'1'高电平的中点
         rData |= dht11DataIn; // 未被拉低则是信号'1'，被拉低则上一位信号是'0'
     }
 

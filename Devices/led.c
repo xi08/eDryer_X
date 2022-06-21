@@ -33,5 +33,5 @@ void led1Init(void)
  */
 void led1Control(uint8_t status)
 {
-    GPIO_WriteBit(GPIOD, GPIO_Pin_2, (BitAction)(!status));
+    PDxOut(2)=(!status);
 }

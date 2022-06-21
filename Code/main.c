@@ -22,7 +22,7 @@ uint8_t e2promCache;
 int main()
 {
     sysTimeInit();
-    delay2us_init();
+    delay1us_init();
     uartInit(115200);
 
     led1Init();

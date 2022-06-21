@@ -7,7 +7,12 @@
 #define i2cSCLIn PCxIn(i2cSCLPin)
 #define i2cSDAOut PCxOut(i2cSDAPin)
 #define i2cSCLOut PCxOut(i2cSCLPin)
-#define i2cDelay() delay2us(3)
+
+#ifdef i2c_HS
+#define i2cDelay() delay1us(2)
+#else
+#define i2cDelay() delay1us(9)
+#endif
 
 /**
  * @brief 发送启动信号
