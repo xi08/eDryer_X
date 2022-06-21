@@ -73,7 +73,7 @@ void i2cMasterModeEnable(void)
 }
 
 /**
- * @brief i2c主机模式退出
+ * @brief 退出i2c主机模式
  *
  */
 void i2cMasterModeDisable(void)
