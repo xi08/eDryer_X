@@ -4,5 +4,9 @@
 #include "stm32f10x_conf.h"
 
 void jtagOff(void);
+void nvicASMDisable(void);
+void nvicASMEnable(void);
+void asmNOP(void);
+
 
 #endif

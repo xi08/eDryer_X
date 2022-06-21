@@ -14,3 +14,30 @@ void jtagOff(void)
     // 关闭jtag
     GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);
 }
+
+/**
+ * @brief 关闭所有中断
+ *
+ */
+void nvicASMDisable(void)
+{
+    __ASM volatile("cpsid i");
+}
+
+/**
+ * @brief 开启所有中断
+ *
+ */
+void nvicASMEnable(void)
+{
+    __ASM volatile("cpsie i");
+}
+    
+/**
+ * @brief 空指令
+ * 
+ */
+void asmNOP(void)
+{
+    __ASM volatile("nop");
+}

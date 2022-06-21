@@ -23,7 +23,11 @@ void delay1ms(uint32_t t)
 void delay1us_init(void)
 {
     TIM_TimeBaseInitTypeDef initStruct_TIM;
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE); // 开启TIM6
+    
+    /* 时钟设置 */
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE); // 使能TIM6时钟
+
+    /* TIM配置 */
     initStruct_TIM.TIM_Period = 8;                       // 设置周期为9
     initStruct_TIM.TIM_Prescaler = 7;                    // 设置预分频为8
     initStruct_TIM.TIM_CounterMode = TIM_CounterMode_Up; // 设置为向上计数
