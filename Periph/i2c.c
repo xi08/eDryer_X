@@ -409,13 +409,13 @@ i2cStatusCode_enum i2cAddrCheck(uint8_t addrWR)
 
     /* 信号控制 */
     statusCode = i2cSTART(); // 发出启动信号
-    if (statusCode & 2)      // 存在错误
+    if (statusCode > 1)      // 存在错误
         return statusCode;
     statusCode = i2cSend(addrWR); // 发送设备写地址
-    if (statusCode & 2)           // 存在错误
+    if (statusCode > 1)           // 存在错误
         return statusCode;
     statusCode = i2cReadACK(); // 读出设备应答
-    if (statusCode & 2)        // 存在错误
+    if (statusCode > 1)        // 存在错误
         return statusCode;
     statusCode = i2cSTOP(); // 发出结束信号
     return statusCode;
