@@ -407,16 +407,22 @@ i2cStatusCode_enum i2cAddrCheck(uint8_t addrWR)
     if (i2cState != i2cMasterState) // 非主机模式
         return i2cStatusCode_ModeErr;
 
-    /* 信号控制 */
+    /* 发起通信 */
     statusCode = i2cSTART(); // 发出启动信号
     if (statusCode > 1)      // 存在错误
         return statusCode;
+
+    /* 发送地址 */
     statusCode = i2cSend(addrWR); // 发送设备写地址
     if (statusCode > 1)           // 存在错误
         return statusCode;
+
+    /* 接收应答 */
     statusCode = i2cReadACK(); // 读出设备应答
     if (statusCode > 1)        // 存在错误
         return statusCode;
+
+    /* 结束通信 */
     statusCode = i2cSTOP(); // 发出结束信号
     return statusCode;
 }
