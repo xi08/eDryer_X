@@ -153,10 +153,10 @@ void SysTick_Handler(void)
 {
 }*/
 
-void i2cEXTIResp(void);
+void i2cSlaveModeResp(void);
 void EXTI15_10_IRQHandler(void)
 {
-  i2cEXTIResp();
+  i2cSlaveModeResp();
 }
 
 /**
