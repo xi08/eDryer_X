@@ -422,7 +422,7 @@ i2cStatusCode_enum i2cAddrCheck(uint8_t addrWR)
 }
 
 /**
- * @brief i2c引脚中断响应
+ * @brief i2c从机响应
  *
  */
 void i2cSlaveModeResp(void)
