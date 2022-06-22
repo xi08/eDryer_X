@@ -93,7 +93,7 @@ void keyProg(void)
     case key_S3: // 长按
     {
         printf("key1L\n");
-        e2promCache = at24c02_read(0);
+        at24c02_read(0, &e2promCache);
         printf("E2PROM Read: %u\n", e2promCache);
         keyState[1] = key_S0;
         break;
