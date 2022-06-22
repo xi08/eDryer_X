@@ -14,9 +14,26 @@
 #define i2cDelay() delay1us(9) // 约100KHz速度
 #endif
 
-#define i2cMaster_SCLStretchingTimeMax 20 // 最大时钟拉伸数
+#define i2cMaster_SCLStretchingTimeMax 20 // 主机最大时钟拉伸数
+#define i2cSlave_MaxCommTime 1000         // 从机最大通讯时长(ms)
 
 i2cState_enum i2cState;
+
+uint8_t i2cSlaveRW;          // 从机读/#写模式监听
+uint8_t i2cSlaveAddr = 0x49; // 从机模式监听地址, 7位
+
+/**
+ * @brief 从机控制位：
+ *  0：从机收/#发方向选择；
+ *  1：从机地址/#数据选择；
+ *
+ */
+uint8_t i2cDataCFG; 
+
+uint8_t i2cSlaveBitCnt;         // 从机收发数据位计数
+uint8_t i2cSlaveRx, i2cSlaveTx; // 从机收发数据缓冲
+
+uint32_t i2cSlaveCommStartTimestamp; // 从机进入时间戳
 
 /**
  * @brief 初始化双向i2c总线
@@ -59,6 +76,16 @@ void i2cInit(void)
     initStruct_nvic.NVIC_IRQChannelPreemptionPriority = 0; // 设置抢占优先级
     initStruct_nvic.NVIC_IRQChannelSubPriority = 3;        // 设置子优先级
     NVIC_Init(&initStruct_nvic);                           // 设置中断
+}
+
+/**
+ * @brief 更改i2c从机地址
+ *
+ * @param newAddr 新i2c地址
+ */
+void i2cSlaveAddrChange(uint8_t newAddr)
+{
+    i2cSlaveAddr = newAddr;
 }
 
 /**
@@ -446,15 +473,67 @@ void i2cSlaveModeResp(void)
 {
     if (!EXTI_GetITStatus((uint32_t)(1 << i2cSCLPin))) // 时钟线电平变化
     {
+        if (!i2cSCLIn) // SCL下降沿
+        {
+            switch (i2cState)
+            {
+            case i2cStartState: // 准备数据位接收
+            {
+                /* 数据控制 */
+                i2cSlaveBitCnt = 0; // 清空数据位计数
+                i2cSlaveRx = 0;     // 清空接收缓冲
+                i2cSlaveTx = 0;     // 清空输出缓冲
 
+                /* 模式切换 */
+                i2cState = i2cDataState; // 切入数据收发模式
+
+                break;
+            }
+            case i2cDataState: // 数据位
+            {
+                i2cSlaveBitCnt++;
+
+                break;
+            }
+            case i2cACKState: // 应答位
+            {
+                break;
+            }
+
+            default:
+                break;
+            }
+        }
+        else // SCL上升沿
+        {
+            switch (i2cState)
+            {
+            case i2cDataState: // 数据位
+            {
+                break;
+            }
+            case i2cACKState: // 应答位
+            {
+                break;
+            }
+            default:
+                break;
+            }
+        }
         EXTI_ClearITPendingBit(((uint32_t)(1 << i2cSCLPin))); // 清除中断标记
     }
     else if (!EXTI_GetITStatus((uint32_t)(1 << i2cSDAPin))) // 数据线电平变化
     {
-        if (!i2cSDAIn && i2cSCLIn) // 接收到启动信号
-            i2cState = i2cStartState;
-        else if (i2cSDAIn && i2cSCLIn) // 接收到结束信号
-            i2cState = i2cIdleState;
+        if (!i2cSDAIn) // SDA下降沿
+        {
+            if (i2cSCLIn)
+                i2cState = i2cStartState; // 接收到启动信号
+        }
+        else // SDA上升沿
+        {
+            if (i2cSCLIn)
+                i2cState = i2cIdleState; // 接收到结束信号
+        }
 
         EXTI_ClearITPendingBit(((uint32_t)(1 << i2cSDAPin))); // 清除中断标记
     }
