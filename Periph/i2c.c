@@ -379,7 +379,6 @@ i2cStatusCode_enum i2cReset(void)
     /* 构造9个时钟 */
     for (i = 0; i < 9; i++)
     {
-
         /* 时钟线控制 */
         i2cSCLOut = 1; // 释放时钟线
         i2cDelay();    // 稳定电平
