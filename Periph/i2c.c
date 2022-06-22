@@ -396,10 +396,9 @@ i2cStatusCode_enum i2cReset(void)
 /**
  * @brief 主机-设备存在检测
  *
- * @param addr 设备地址
- * @return uint8_t 设备响应信号
+ * @param addrWR 设备写地址
+ * @return i2cStatusCode_enum i2c工作状态
  */
-
 i2cStatusCode_enum i2cAddrCheck(uint8_t addrWR)
 {
     i2cStatusCode_enum statusCode;
