@@ -21,7 +21,7 @@ typedef enum
     i2cMasterState,   // 主机模式
     i2cStartState,    // 从机模式，已接启动信号
     i2cDataState,     // 从机模式，正在收发数据位
-    i2cACKState,      // 从机模式，正在收发读写位
+    i2cACKState,      // 从机模式，正在收发应答位
     i2cStopState,     // 从机模式，等待结束信号
 } i2cState_enum;
 
