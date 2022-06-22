@@ -14,6 +14,8 @@
 #define i2cDelay() delay1us(9) // 约100KHz速度
 #endif
 
+#define i2cMaster_SCLStretchingTimeMax 20 // 最大时钟拉伸数
+
 i2cState_enum i2cState;
 
 /**
@@ -114,7 +116,7 @@ i2cStatusCode_enum i2cSTART(void)
     i2cSDAOut = 1; // 释放数据线
 
     /* 数据线回读 */
-    if (i2cSDAIn != i2cSDAOut) // 数据线不受控
+    if (i2cSDAIn != i2cSDAOut) // 总线控制丢失
         return i2cStatusCode_LostBusCtrl;
 
     /* 时钟线控制 */
@@ -126,7 +128,7 @@ i2cStatusCode_enum i2cSTART(void)
     i2cDelay();    // 稳定电平
 
     /* 数据线回读 */
-    if (i2cSDAIn != i2cSDAOut) // 数据线不受控
+    if (i2cSDAIn != i2cSDAOut) // 总线控制丢失
         return i2cStatusCode_LostBusCtrl;
 
     /* 时钟线控制 */
@@ -151,7 +153,7 @@ i2cStatusCode_enum i2cSTOP(void)
     i2cSDAOut = 0; // 准备发出信号
 
     /* 数据线回读 */
-    if (i2cSDAIn != i2cSDAOut) // 数据线不受控
+    if (i2cSDAIn != i2cSDAOut) // 总线控制丢失
         return i2cStatusCode_LostBusCtrl;
 
     /* 时钟线控制 */
@@ -162,7 +164,7 @@ i2cStatusCode_enum i2cSTOP(void)
     i2cSDAOut = 1; // 发出结束信号并释放数据线
 
     /* 数据线回读 */
-    if (i2cSDAIn != i2cSDAOut) // 数据线不受控
+    if (i2cSDAIn != i2cSDAOut) // 总线控制丢失
         return i2cStatusCode_LostBusCtrl;
 
     return i2cStatusCode_Success;
@@ -186,13 +188,13 @@ i2cStatusCode_enum i2cACK(void)
     /* 数据线控制 */
     i2cSDAOut = 0; // 发出应答信号
 
+    /* 数据线回读 */
+    if (i2cSDAIn != i2cSDAOut) // 总线控制丢失
+        return i2cStatusCode_LostBusCtrl;
+
     /* 时钟线控制 */
     i2cSCLOut = 1; // 释放时钟线，保证数据有效
     i2cDelay();    // 稳定电平
-
-    /* 数据线回读 */
-    if (i2cSDAIn != i2cSDAOut) // 数据线不受控
-        return i2cStatusCode_LostBusCtrl;
 
     /* 时钟线控制 */
     i2cSCLOut = 0; // 钳住时钟线，保证数据可变
@@ -202,7 +204,7 @@ i2cStatusCode_enum i2cACK(void)
     i2cSDAOut = 1; // 释放数据线
 
     /* 数据线回读 */
-    if (i2cSDAIn != i2cSDAOut) // 数据线不受控
+    if (i2cSDAIn != i2cSDAOut) // 总线控制丢失
         return i2cStatusCode_LostBusCtrl;
 
     return i2cStatusCode_Success;
@@ -227,7 +229,7 @@ i2cStatusCode_enum i2cNACK(void)
     i2cSDAOut = 1; // 发出非应答信号
 
     /* 数据线回读 */
-    if (i2cSDAIn != i2cSDAOut) // 数据线不受控
+    if (i2cSDAIn != i2cSDAOut) // 总线控制丢失
         return i2cStatusCode_LostBusCtrl;
 
     /* 时钟线控制 */
@@ -242,7 +244,7 @@ i2cStatusCode_enum i2cNACK(void)
     i2cSDAOut = 1; // 释放数据线
 
     /* 数据线回读 */
-    if (i2cSDAIn != i2cSDAOut) // 数据线不受控
+    if (i2cSDAIn != i2cSDAOut) // 总线控制丢失
         return i2cStatusCode_LostBusCtrl;
 
     return i2cStatusCode_Success;
@@ -273,7 +275,7 @@ i2cStatusCode_enum i2cSend(uint8_t sData)
         i2cSDAOut = ((sData & 0x80) ? 1 : 0); // 发出数据高位
 
         /* 数据线回读 */
-        if (i2cSDAIn != i2cSDAOut) // 数据线不受控
+        if (i2cSDAIn != i2cSDAOut) // 总线控制丢失
             return i2cStatusCode_LostBusCtrl;
 
         /* 数据位控制 */
@@ -292,7 +294,7 @@ i2cStatusCode_enum i2cSend(uint8_t sData)
     i2cSDAOut = 1; // 释放数据线
 
     /* 数据线回读 */
-    if (i2cSDAIn != i2cSDAOut) // 数据线不受控
+    if (i2cSDAIn != i2cSDAOut) // 总线控制丢失
         return i2cStatusCode_LostBusCtrl;
 
     return i2cStatusCode_Success;
@@ -341,6 +343,7 @@ i2cStatusCode_enum i2cRead(uint8_t *rData)
 i2cStatusCode_enum i2cReadACK(void)
 {
     uint8_t ackSig;
+    uint8_t SCLStretchingTime = i2cMaster_SCLStretchingTimeMax;
 
     /* 工作状态检测 */
     if (i2cState != i2cMasterState) // 非主机模式
@@ -352,6 +355,15 @@ i2cStatusCode_enum i2cReadACK(void)
     /* 时钟线控制 */
     i2cSCLOut = 1; // 释放时钟线，保证数据有效
     i2cDelay();    // 稳定电平
+
+    /* 时钟线回读 */
+    while (!i2cSCLIn) // 进入时钟拉伸
+    {
+        if (!SCLStretchingTime) // 时钟拉伸过长
+            return i2cStatusCode_Timeout;
+        SCLStretchingTime--;
+        i2cDelay();
+    }
 
     /* 数据线控制 */
     ackSig = (i2cSDAIn ? 1 : 0); // 读出应答信号
