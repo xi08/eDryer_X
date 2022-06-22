@@ -1,5 +1,6 @@
 // code = utf-8
 #include "i2c.h"
+#include "bitband_base.h"
 #include "bitband_io.h"
 #include "delay.h"
 
@@ -28,7 +29,7 @@ uint8_t i2cSlaveAddr = 0x49; // 从机模式监听地址, 7位
  *  1：从机地址/#数据选择；
  *
  */
-uint8_t i2cDataCFG; 
+uint8_t i2cDataCFG;
 
 uint8_t i2cSlaveBitCnt;         // 从机收发数据位计数
 uint8_t i2cSlaveRx, i2cSlaveTx; // 从机收发数据缓冲
@@ -485,7 +486,9 @@ void i2cSlaveModeResp(void)
                 i2cSlaveTx = 0;     // 清空输出缓冲
 
                 /* 模式切换 */
-                i2cState = i2cDataState; // 切入数据收发模式
+                bitBandAddr(i2cDataCFG, 0) = 1; // 选择为接收
+                bitBandAddr(i2cDataCFG, 1) = 1; // 选择为地址
+                i2cState = i2cDataState;        // 切入数据收发模式
 
                 break;
             }
