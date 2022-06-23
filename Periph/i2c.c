@@ -20,13 +20,12 @@
 
 i2cState_enum i2cState;
 
-uint8_t i2cSlaveRW;          // 从机读/#写模式监听
-uint8_t i2cSlaveAddr = 0x49; // 从机模式监听地址, 7位
+uint8_t i2cSlaveAddr = 0x92; // 从机模式监听地址, 8位
 
 /**
- * @brief 从机控制位：
- *  0：从机收/#发方向选择；
- *  1：从机地址/#数据选择；
+ * @brief 从机数据收发控制位：
+ *  0：收/#发；
+ *  1：地址/#数据；
  *
  */
 uint8_t i2cDataCFG;
@@ -486,15 +485,49 @@ void i2cSlaveModeResp(void)
                 i2cSlaveTx = 0;     // 清空输出缓冲
 
                 /* 模式切换 */
-                bitBandAddr(i2cDataCFG, 0) = 1; // 选择为接收
-                bitBandAddr(i2cDataCFG, 1) = 1; // 选择为地址
-                i2cState = i2cDataState;        // 切入数据收发模式
+                bitBandAddr((&i2cDataCFG), 0) = 1; // 选择为接收
+                bitBandAddr((&i2cDataCFG), 1) = 1; // 选择为地址
+                i2cState = i2cDataState;           // 切入数据收发模式
 
                 break;
             }
             case i2cDataState: // 数据位
             {
-                i2cSlaveBitCnt++;
+                if (bitBandAddr((&i2cDataCFG), 0)) // 接收控制
+                {
+                    if (bitBandAddr((&i2cDataCFG), 1)) // 地址接收
+                    {
+                        if (i2cSlaveBitCnt < 8) // 地址未接收完
+                        {
+                            i2cSlaveRx |= i2cSDAIn; // 接收数据位
+                            i2cSlaveRx <<= 1;       // 数据左移
+                            i2cSlaveBitCnt++;       // 数据计数自增
+                        }
+                        else // 地址已接收完，进行比对
+                        {
+                            if (i2cSlaveRx == (i2cSlaveAddr | i2cAddrWR)) // 比对正确，为写地址
+                            {
+                                bitBandAddr((&i2cDataCFG), 1) = 0; // 选择为数据
+                                bitBandAddr((&i2cDataCFG), 0) = 1; // 选择为接收
+                                i2cState = i2cACKState;            // 切入应答收发模式
+                            }
+                            else if (i2cSlaveRx == (i2cSlaveAddr | i2cAddrRD)) // 比对正确，为读地址
+                            {
+                                bitBandAddr((&i2cDataCFG), 1) = 0; // 选择为数据
+                                bitBandAddr((&i2cDataCFG), 0) = 0; // 选择为发送
+                                i2cState = i2cACKState;            // 切入应答收发模式
+                            }
+                            else // 比对失败
+                                i2cState = i2cStopState;
+                        }
+                    }
+                    else // 数据接收
+                    {
+                    }
+                }
+                else // 发送控制
+                {
+                }
 
                 break;
             }
