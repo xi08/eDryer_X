@@ -1,4 +1,5 @@
 // code = utf-8
+
 #include "Qmath.h"
 #include <limits.h>
 
@@ -11,7 +12,8 @@
  */
 _Qtype _Qmpy(_Qtype A, _Qtype B)
 {
-    char i = _QtypeSize;
+    signed char i = _QtypeSize;
+
     while (A > SHRT_MAX || A < SHRT_MIN)
     {
         A >>= 1;
@@ -22,7 +24,10 @@ _Qtype _Qmpy(_Qtype A, _Qtype B)
         B >>= 1;
         i--;
     }
-    return (A * B) >> (i > 0 ? i : 0);
+    if (i > 0)
+        return (A * B) >> i;
+    if (i < 0)
+        return (A * B) << (-i);
 }
 
 /**
@@ -34,7 +39,7 @@ _Qtype _Qmpy(_Qtype A, _Qtype B)
  */
 _Qtype _Qdiv(_Qtype A, _Qtype B)
 {
-    char i = _QtypeSize;
+    signed char i = _QtypeSize;
     while (A < (LONG_MAX >> 1) && A > (LONG_MIN >> 1) && i)
     {
         A <<= 1;

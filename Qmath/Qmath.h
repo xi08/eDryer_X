@@ -14,4 +14,8 @@ typedef long _Qtype;
 _Qtype _Qmpy(_Qtype A, _Qtype B);
 _Qtype _Qdiv(_Qtype A, _Qtype B);
 
+_Qtype _Qsin(_Qtype A);
+_Qtype _Qcos(_Qtype A);
+_Qtype _Qtan(_Qtype A);
+
 #endif
