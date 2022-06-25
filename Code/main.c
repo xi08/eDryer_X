@@ -31,7 +31,6 @@ int main()
     delay1us_init();
 
     uartInit(115200);
-
     i2cInit();
 
     ledInit();
