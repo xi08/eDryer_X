@@ -24,7 +24,6 @@
 *.elf
 *.hex
 *.h86
-*.lib
 *.obj
 *.o
 *.sbr

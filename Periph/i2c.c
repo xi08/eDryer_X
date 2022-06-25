@@ -473,7 +473,7 @@ void i2cSlaveModeResp(void)
 {
     if (!EXTI_GetITStatus((uint32_t)(1 << i2cSCLPin))) // 时钟线电平变化
     {
-        if (!i2cSCLIn) // SCL下降沿
+        if (!i2cSCLIn) // SCL低电平，数据可变；本机发送
         {
             switch (i2cState)
             {
@@ -493,6 +493,30 @@ void i2cSlaveModeResp(void)
             }
             case i2cDataState: // 数据位
             {
+
+                break;
+            }
+            case i2cACKState: // 应答位
+            {
+                if (bitBandAddr((&i2cDataCFG), 0)) // 接收结束，本机发送
+                {
+                    i2cSDAOut = 0;                     // 发送应答位
+                    bitBandAddr((&i2cDataCFG), 1) = 0; // 选择为数据
+                    i2cState = i2cDataState;           // 再次切入数据收发模式
+                }
+
+                break;
+            }
+            default: // 非法状态
+                break;
+            }
+        }
+        else // SCL高电平，数据不可变；本机接收
+        {
+            switch (i2cState)
+            {
+            case i2cDataState: // 数据位
+            {
                 if (bitBandAddr((&i2cDataCFG), 0)) // 接收控制
                 {
                     if (bitBandAddr((&i2cDataCFG), 1)) // 地址接收
@@ -507,52 +531,32 @@ void i2cSlaveModeResp(void)
                         {
                             if (i2cSlaveRx == (i2cSlaveAddr | i2cAddrWR)) // 比对正确，为写地址
                             {
-                                bitBandAddr((&i2cDataCFG), 1) = 0; // 选择为数据
                                 bitBandAddr((&i2cDataCFG), 0) = 1; // 选择为接收
                                 i2cState = i2cACKState;            // 切入应答收发模式
                             }
                             else if (i2cSlaveRx == (i2cSlaveAddr | i2cAddrRD)) // 比对正确，为读地址
                             {
-                                bitBandAddr((&i2cDataCFG), 1) = 0; // 选择为数据
                                 bitBandAddr((&i2cDataCFG), 0) = 0; // 选择为发送
                                 i2cState = i2cACKState;            // 切入应答收发模式
                             }
                             else // 比对失败
-                                i2cState = i2cStopState;
+                            {
+                                i2cState = i2cStopState; // 锁定,等待当前通信结束或超时
+                            }
+                            i2cSlaveBitCnt = 0; // 清空数据计数
                         }
                     }
                     else // 数据接收
                     {
                     }
                 }
-                else // 发送控制
-                {
-                }
-
                 break;
             }
             case i2cACKState: // 应答位
             {
                 break;
             }
-
-            default:
-                break;
-            }
-        }
-        else // SCL上升沿
-        {
-            switch (i2cState)
-            {
-            case i2cDataState: // 数据位
-            {
-                break;
-            }
-            case i2cACKState: // 应答位
-            {
-                break;
-            }
-            default:
+            default: // 非法状态
                 break;
             }
         }

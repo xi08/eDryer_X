@@ -3,6 +3,11 @@
         "stdint.h": "c",
         "stm32f10x_conf.h": "c",
         "i2c.h": "c",
-        "stm32f10x.h": "c"
+        "stm32f10x.h": "c",
+        "sqmath.h": "c",
+        "limits.h": "c",
+        "LIMITS.H": "cpp",
+        "qmath.h": "c",
+        "stdlib.h": "c"
     }
 }

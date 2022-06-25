@@ -17,6 +17,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "Qmath.h"
+
 uint16_t flashCache[2];
 uint8_t e2promCache;
 #define flashSaveAddr 0x08004000
@@ -39,6 +41,7 @@ int main()
     led0Pin = 1;
 
     delay1ms(500);
+
     while (1)
     {
         updateKey();
