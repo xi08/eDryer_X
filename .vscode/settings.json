@@ -6,8 +6,10 @@
         "stm32f10x.h": "c",
         "sqmath.h": "c",
         "limits.h": "c",
-        "LIMITS.H": "cpp",
+        "LIMITS.H": "c",
         "qmath.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "key.h": "c",
+        "iqmathlib.h": "c"
     }
 }
