@@ -314,7 +314,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>3</Optim>
+            <Optim>1</Optim>
             <oTime>1</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Code;.\Core;.\Devices;.\Periph;.\STLibrary\inc;.\Qmath</IncludePath>
+              <IncludePath>.\Code;.\Core;.\Devices;.\Periph;.\STLibrary\inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -413,6 +413,11 @@
               <FileName>startup_stm32f10x_hd.s</FileName>
               <FileType>2</FileType>
               <FilePath>.\Core\startup_stm32f10x_hd.s</FilePath>
+            </File>
+            <File>
+              <FileName>IQmathLib-cm3.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>.\Core\IQmathLib-cm3.lib</FilePath>
             </File>
           </Files>
         </Group>
@@ -593,16 +598,6 @@
               <FileName>at24c02.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Devices\at24c02.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Qmath</GroupName>
-          <Files>
-            <File>
-              <FileName>Qmath.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Qmath\Qmath.c</FilePath>
             </File>
           </Files>
         </Group>

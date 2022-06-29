@@ -17,7 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "Qmath.h"
+#include "IQmathLib.h"
 
 uint16_t flashCache[2];
 uint8_t e2promCache;
