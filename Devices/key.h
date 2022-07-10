@@ -28,4 +28,5 @@ extern keyState_enum keyState[keyNum];
 void keyInit(void);
 void updateKey(void);
 void keyProg(void);
+
 #endif

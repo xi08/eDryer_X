@@ -6,5 +6,6 @@
 #include "stm32f10x_conf.h"
 
 void jtagDisable(void);
+void iwdgInit(void);
 
 #endif

@@ -5,6 +5,7 @@
 
 #include "delay.h"
 #include "systime.h"
+#include "dbg.h"
 
 #include "i2c.h"
 #include "uart.h"
@@ -40,6 +41,7 @@ int main()
     led0Pin = 1;
 
     delay1ms(500);
+    iwdgInit();
 
     while (1)
     {

@@ -127,6 +127,7 @@ void PendSV_Handler(void)
 {
 }
 extern volatile uint32_t sysTime;
+void IWDG_ReloadCounter(void);
 /**
   * @brief  This function handles SysTick Handler.
   * @param  None
@@ -135,6 +136,7 @@ extern volatile uint32_t sysTime;
 void SysTick_Handler(void)
 {
   sysTime++;
+  IWDG_ReloadCounter();
 }
 
 /******************************************************************************/

@@ -23,7 +23,7 @@ void delay1ms(uint32_t t)
 void delay1us_init(void)
 {
     TIM_TimeBaseInitTypeDef initStruct_TIM;
-    
+
     /* 时钟设置 */
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE); // 使能TIM6时钟
 
