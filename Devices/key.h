@@ -25,8 +25,8 @@ typedef enum
 } keyState_enum;
 extern keyState_enum keyState[keyNum];
 
-void keyInit(void);
-void updateKey(void);
-void keyProg(void);
+void key_init(void);
+void key_updateInfo(void);
+void key_resp(void);
 
 #endif

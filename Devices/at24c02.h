@@ -7,6 +7,7 @@
 
 #define at24c02_addr 0xa0
 
+void at24c02_init(void);
 void at24c02_write(uint8_t addr, uint8_t data);
 void at24c02_read(uint8_t addr, uint8_t *data);
 void at24c02_writePage(uint8_t addr, uint8_t *data, uint8_t n);

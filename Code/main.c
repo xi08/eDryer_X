@@ -7,7 +7,6 @@
 #include "systime.h"
 #include "dbg.h"
 
-#include "i2c.h"
 #include "uart.h"
 
 #include "at24c02.h"
@@ -32,10 +31,12 @@ int main()
     delay1us_init();
 
     uartInit(115200);
-    i2cInit();
+    
 
-    ledInit();
-    keyInit();
+    led_init();
+    key_init();
+    at24c02_init();
+
 
     printf("%s\n%s:%s,%s\n", "MiniSTM32 V3.1", "Compiled in", __TIME__, __DATE__);
     led0Pin = 1;
@@ -45,8 +46,8 @@ int main()
 
     while (1)
     {
-        updateKey();
-        keyProg();
+        key_updateInfo();
+        key_resp();
         flashCache[0] = sysTime >> 16;
         flashCache[1] = sysTime;
         e2promCache = sysTime / 1000;
@@ -60,7 +61,7 @@ int main()
  * @brief 按键响应
  *
  */
-void keyProg(void)
+void key_resp(void)
 {
     switch (keyState[0]) // KEY0
     {

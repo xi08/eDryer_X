@@ -5,22 +5,22 @@
 #include "stm32f10x.h"
 #include "stm32f10x_conf.h"
 
-#define dht11DataPin 0
+#define DHT11DataPin 0
 
 /**
  * @brief 温度数据
  *
  */
-extern int8_t dht11_tem;
+extern int8_t DHT11_tem;
 
 /**
  * @brief 湿度数据
  *
  */
-extern int8_t dht11_hum;
+extern int8_t DHT11_hum;
 
-void dht11Init(void);
-uint8_t dht11START(void);
-uint8_t dht11Read(void);
+void DHT11_init(void);
+uint8_t DHT11_start(void);
+uint8_t DHT11_read(void);
 
 #endif

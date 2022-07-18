@@ -18,7 +18,7 @@ keyState_enum keyState[keyNum];
  * @brief 按键初始化
  *
  */
-void keyInit(void)
+void key_init(void)
 {
     GPIO_InitTypeDef initStruct_GPIO;
 
@@ -37,7 +37,7 @@ void keyInit(void)
  * @brief 更新按键信息
  *
  */
-void updateKey(void)
+void key_updateInfo(void)
 {
     uint8_t i = keyNum, keyInfo = 0xff;
 

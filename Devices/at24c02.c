@@ -4,6 +4,12 @@
 #include "delay.h"
 #include "i2c.h"
 
+
+void at24c02_init(void)
+{
+    i2cInit();
+}
+
 /**
  * @brief 单字节写
  *

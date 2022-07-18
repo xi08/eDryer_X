@@ -6,7 +6,7 @@
  * @brief 初始化LED0/LED1
  *
  */
-void ledInit(void)
+void led_init(void)
 {
     GPIO_InitTypeDef initSturct_gpio;
 
@@ -31,7 +31,7 @@ void ledInit(void)
  *
  * @param status 控制信号
  */
-void led0Control(uint8_t status)
+void led0_control(uint8_t status)
 {
     PAxOut(8) = (!status);
 }
@@ -41,7 +41,7 @@ void led0Control(uint8_t status)
  *
  * @param status 控制信号
  */
-void led1Control(uint8_t status)
+void led1_control(uint8_t status)
 {
     PDxOut(2) = (!status);
 }
