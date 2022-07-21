@@ -28,7 +28,8 @@ extern uint8_t uartRxBufferIdx;
 extern uint8_t uartRxBufferDirtyFlag;
 
 void uartInit(uint32_t baudRate);
-uint8_t uartSendChar(USART_TypeDef *commPort, uint8_t Char);
-void uartSend(USART_TypeDef *commPort, uint8_t *Str);
+char uartSendChar(USART_TypeDef *commPort, char Char);
+void uartSend(USART_TypeDef *commPort, char *Str);
+void uart2Init(uint32_t baudRate);
 
 #endif

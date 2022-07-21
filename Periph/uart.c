@@ -155,9 +155,9 @@ void USART2_IRQHandler(void)
  *
  * @param commPort 通信接口
  * @param Char 发送的字符
- * @return uint8_t 发送的字符
+ * @return char 发送的字符
  */
-uint8_t uartSendChar(USART_TypeDef *commPort, uint8_t Char)
+char uartSendChar(USART_TypeDef *commPort, char Char)
 {
     while (!USART_GetFlagStatus(commPort, USART_FLAG_TXE))
         ;
@@ -171,7 +171,7 @@ uint8_t uartSendChar(USART_TypeDef *commPort, uint8_t Char)
  * @param commPort 通信接口
  * @param Str 发送的字符串
  */
-void uartSend(USART_TypeDef *commPort, uint8_t *Str)
+void uartSend(USART_TypeDef *commPort, char *Str)
 {
     while (*Str != '\0')
         uartSendChar(commPort, *Str++);
