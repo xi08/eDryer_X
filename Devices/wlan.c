@@ -5,7 +5,8 @@
 
 void wlanInit(void)
 {
-    uart2Init(115200);
-    uartSend(USART2, "AT");
+    uart3Init(115200);
+    uartSend(USART3, "AT");
+    
     
 }
