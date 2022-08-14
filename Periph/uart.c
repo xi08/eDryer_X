@@ -200,9 +200,9 @@ void USART2_IRQHandler(void)
 void USART3_IRQHandler(void)
 {
     uint8_t ch;
-    if (USART_GetITStatus(USART3, USART_IT_RXNE)) // 检测到USART2接收非空
+    if (USART_GetITStatus(USART3, USART_IT_RXNE)) // 检测到USART3接收非空
     {
-        ch = USART_ReceiveData(USART3); // 暂存USART2接收到的数据
+        ch = USART_ReceiveData(USART3); // 暂存USART3接收到的数据
 
         /* 发送结束检测 */
         if (ch == (uint8_t)uartStopSymbol)
