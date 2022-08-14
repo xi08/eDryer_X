@@ -5,7 +5,6 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "C:\\Keil_v5\\ARM\\ARMCC\\include\\**",
-                "C:\\Keil_v5\\ARM\\CMSIS\\Include\\",
                 "C:\\Keil_v5\\ARM\\Packs\\Keil\\STM32F1xx_DFP\\2.4.0\\Device\\Include"
             ],
             "defines": [
