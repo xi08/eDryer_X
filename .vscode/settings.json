@@ -3,6 +3,7 @@
         "uart.h": "c",
         "systime.h": "c",
         "string": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "stm32f10x.h": "c"
     }
 }
