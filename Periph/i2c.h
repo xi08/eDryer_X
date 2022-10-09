@@ -36,7 +36,7 @@ typedef enum
 
     /* 应答响应 */
     i2cStatusCode_ACK = 0,  // 接收到应答
-    i2cStatusCode_NACK = 1, // 接收到非应答
+    i2cStatusCode_NAK = 1, // 接收到非应答
 
     /* 地址检测响应 */
     i2cStatusCode_AddrOK = 0,    // 地址存在
@@ -62,7 +62,7 @@ i2cStatusCode_enum i2cMasterModeDisable(void);
 i2cStatusCode_enum i2cSTART(void);
 i2cStatusCode_enum i2cSTOP(void);
 i2cStatusCode_enum i2cACK(void);
-i2cStatusCode_enum i2cNACK(void);
+i2cStatusCode_enum i2cNAK(void);
 i2cStatusCode_enum i2cSend(uint8_t sData);
 i2cStatusCode_enum i2cReset(void);
 i2cStatusCode_enum i2cRead(uint8_t *rData);

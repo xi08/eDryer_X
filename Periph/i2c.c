@@ -23,9 +23,10 @@ i2cState_enum i2cState;
 uint8_t i2cSlaveAddr = 0x92; // 从机模式监听地址, 8位
 
 /**
- * @brief 从机数据收发控制位：
+ * @brief 从机状态控制：
  *  0：收/#发；
  *  1：地址/#数据；
+ *  2：非应答/#应答
  *
  */
 uint8_t i2cDataCFG;
@@ -79,21 +80,11 @@ void i2cInit(void)
 }
 
 /**
- * @brief 更改i2c从机地址
- *
- * @param newAddr 新i2c地址
- */
-void i2cSlaveAddrChange(uint8_t newAddr)
-{
-    i2cSlaveAddr = newAddr;
-}
-
-/**
  * @brief 进入i2c主机模式
  *
  * @return i2cStatusCode_enum i2c工作状态
  */
-i2cStatusCode_enum i2cMasterModeEnable(void)
+inline i2cStatusCode_enum i2cMasterModeEnable(void)
 {
     /* 工作状态检测 */
     if (i2cState != i2cIdleState) // 非空闲
@@ -113,7 +104,7 @@ i2cStatusCode_enum i2cMasterModeEnable(void)
  *
  * @return i2cStatusCode_enum i2c工作状态
  */
-i2cStatusCode_enum i2cMasterModeDisable(void)
+inline i2cStatusCode_enum i2cMasterModeDisable(void)
 {
     /* 工作状态检测 */
     if (i2cState != i2cMasterState) // 非主机模式
@@ -133,7 +124,7 @@ i2cStatusCode_enum i2cMasterModeDisable(void)
  *
  * @return i2cStatusCode_enum i2c工作状态
  */
-i2cStatusCode_enum i2cSTART(void)
+inline i2cStatusCode_enum i2cSTART(void)
 {
     /* 工作状态检测 */
     if (i2cState != i2cMasterState) // 非主机模式
@@ -159,7 +150,7 @@ i2cStatusCode_enum i2cSTART(void)
         return i2cStatusCode_LostBusCtrl;
 
     /* 时钟线控制 */
-    i2cSCLOut = 0; // 钳住时钟线
+    i2cSCLOut = 0; // 控制时钟线
     i2cDelay();    // 稳定电平
 
     return i2cStatusCode_Success;
@@ -170,7 +161,7 @@ i2cStatusCode_enum i2cSTART(void)
  *
  * @return i2cStatusCode_enum i2c工作状态
  */
-i2cStatusCode_enum i2cSTOP(void)
+inline i2cStatusCode_enum i2cSTOP(void)
 {
     /* 工作状态检测 */
     if (i2cState != i2cMasterState) // 非主机模式
@@ -202,14 +193,14 @@ i2cStatusCode_enum i2cSTOP(void)
  *
  * @return i2cStatusCode_enum i2c工作状态
  */
-i2cStatusCode_enum i2cACK(void)
+inline i2cStatusCode_enum i2cACK(void)
 {
     /* 工作状态检测 */
     if (i2cState != i2cMasterState) // 非主机模式
         return i2cStatusCode_ModeErr;
 
     /* 时钟线控制 */
-    i2cSCLOut = 0; // 钳住时钟线，保证数据可变
+    i2cSCLOut = 0; // 控制时钟线，保证数据可变
     i2cDelay();    // 稳定电平
 
     /* 数据线控制 */
@@ -224,7 +215,7 @@ i2cStatusCode_enum i2cACK(void)
     i2cDelay();    // 稳定电平
 
     /* 时钟线控制 */
-    i2cSCLOut = 0; // 钳住时钟线，保证数据可变
+    i2cSCLOut = 0; // 控制时钟线，保证数据可变
     i2cDelay();    // 稳定电平
 
     /* 数据线控制 */
@@ -242,14 +233,14 @@ i2cStatusCode_enum i2cACK(void)
  *
  * @return i2cStatusCode_enum i2c工作状态
  */
-i2cStatusCode_enum i2cNACK(void)
+inline i2cStatusCode_enum i2cNAK(void)
 {
     /* 工作状态检测 */
     if (i2cState != i2cMasterState) // 非主机模式
         return i2cStatusCode_ModeErr;
 
     /* 时钟线控制 */
-    i2cSCLOut = 0; // 钳住时钟线，保证数据可变
+    i2cSCLOut = 0; // 控制时钟线，保证数据可变
     i2cDelay();    // 稳定电平
 
     /* 数据线控制 */
@@ -264,7 +255,7 @@ i2cStatusCode_enum i2cNACK(void)
     i2cDelay();    // 稳定电平
 
     /* 时钟线控制 */
-    i2cSCLOut = 0; // 钳住时钟线，保证数据可变
+    i2cSCLOut = 0; // 控制时钟线，保证数据可变
     i2cDelay();    // 稳定电平
 
     /* 数据线控制 */
@@ -295,7 +286,7 @@ i2cStatusCode_enum i2cSend(uint8_t sData)
     for (i = 0; i < 8; i++)
     {
         /* 时钟线控制 */
-        i2cSCLOut = 0; // 钳住时钟线，保证数据可变
+        i2cSCLOut = 0; // 控制时钟线，保证数据可变
         i2cDelay();    // 稳定电平
 
         /* 数据线控制 */
@@ -314,7 +305,7 @@ i2cStatusCode_enum i2cSend(uint8_t sData)
     }
 
     /* 时钟线控制 */
-    i2cSCLOut = 0; // 钳住时钟线，保证数据可变
+    i2cSCLOut = 0; // 控制时钟线，保证数据可变
     i2cDelay();    // 稳定电平
 
     /* 数据线控制 */
@@ -355,7 +346,7 @@ i2cStatusCode_enum i2cRead(uint8_t *rData)
         (*rData) |= (i2cSDAIn ? 1 : 0); // 读出数据高位
 
         /* 时钟线控制 */
-        i2cSCLOut = 0; // 钳住时钟线
+        i2cSCLOut = 0; // 控制时钟线
         i2cDelay();    // 稳定电平
     }
 
@@ -396,7 +387,7 @@ i2cStatusCode_enum i2cReadACK(void)
     ackSig = (i2cSDAIn ? 1 : 0); // 读出应答信号
 
     /* 时钟线控制 */
-    i2cSCLOut = 0; // 钳住时钟线，保证数据可变
+    i2cSCLOut = 0; // 控制时钟线，保证数据可变
     i2cDelay();    // 稳定电平
 
     return (i2cStatusCode_enum)ackSig;
@@ -423,7 +414,7 @@ i2cStatusCode_enum i2cReset(void)
         i2cDelay();    // 稳定电平
 
         /* 时钟线控制 */
-        i2cSCLOut = 0; // 钳住时钟线
+        i2cSCLOut = 0; // 控制时钟线
         i2cDelay();    // 稳定电平
     }
     i2cSCLOut = 1; // 释放时钟线
@@ -466,18 +457,32 @@ i2cStatusCode_enum i2cAddrCheck(uint8_t addrWR)
 }
 
 /**
+ * @brief 更改i2c从机地址
+ *
+ * @param newAddr 新i2c地址
+ * @return i2cStatusCode_enum i2c工作状态
+ */
+inline i2cStatusCode_enum i2cSlaveAddrChange(uint8_t newAddr)
+{
+    if (i2cState != i2cIdleState) // 非空闲
+        return i2cStatusCode_ModeErr;
+    i2cSlaveAddr = newAddr;
+    return i2cStatusCode_Success;
+}
+
+/**
  * @brief i2c从机响应
  *
  */
 void i2cSlaveModeResp(void)
 {
-    if (!EXTI_GetITStatus((uint32_t)(1 << i2cSCLPin))) // 时钟线电平变化
+    if (!EXTI_GetITStatus((uint32_t)(1 << i2cSCLPin))) // 时钟线电平变化；收发数据
     {
-        if (!i2cSCLIn) // SCL低电平，数据可变；本机发送
+        if (!i2cSCLIn) // SCL低电平，数据解锁
         {
             switch (i2cState)
             {
-            case i2cStartState: // 准备数据位接收
+            case i2cStartState: // 准备数据位发送
             {
                 /* 数据控制 */
                 i2cSlaveBitCnt = 0; // 清空数据位计数
@@ -493,16 +498,28 @@ void i2cSlaveModeResp(void)
             }
             case i2cDataState: // 数据位
             {
-
-                break;
+                if (!bitBandAddr((&i2cDataCFG), 0)) // 发送控制
+                {
+                    if (i2cSlaveBitCnt <= 7) // 数据未发送完
+                    {
+                        i2cSDAOut = ((i2cSlaveTx & 0x80) ? 1 : 0); // 发出数据高位
+                        i2cSlaveRx <<= 1;                          // 数据左移
+                        i2cSlaveBitCnt++;                          // 数据计数自增
+                    }
+                    if (i2cSlaveBitCnt >= 7) // 数据已发送完
+                    {
+                        bitBandAddr((&i2cDataCFG), 0) = 1; // 选择为接收
+                        i2cState = i2cACKState;            // 切入应答收发模式
+                    }
+                }
             }
             case i2cACKState: // 应答位
             {
-                if (bitBandAddr((&i2cDataCFG), 0)) // 接收结束，本机发送
+                if (!bitBandAddr((&i2cDataCFG), 0)) // 本机发送应答位
                 {
-                    i2cSDAOut = 0;                     // 发送应答位
-                    bitBandAddr((&i2cDataCFG), 1) = 0; // 选择为数据
-                    i2cState = i2cDataState;           // 再次切入数据收发模式
+                    i2cSDAOut = bitBandAddr((&i2cDataCFG), 2); // 发送应答位
+                    bitBandAddr((&i2cDataCFG), 1) = 0;         // 选择为数据
+                    i2cState = i2cDataState;                   // 再次切入数据收发模式
                 }
 
                 break;
@@ -511,7 +528,7 @@ void i2cSlaveModeResp(void)
                 break;
             }
         }
-        else // SCL高电平，数据不可变；本机接收
+        else // SCL高电平，数据锁定
         {
             switch (i2cState)
             {
@@ -521,18 +538,19 @@ void i2cSlaveModeResp(void)
                 {
                     if (bitBandAddr((&i2cDataCFG), 1)) // 地址接收
                     {
-                        if (i2cSlaveBitCnt < 8) // 地址未接收完
+                        if (i2cSlaveBitCnt <= 7) // 地址未接收完
                         {
-                            i2cSlaveRx |= i2cSDAIn; // 接收数据位
                             i2cSlaveRx <<= 1;       // 数据左移
+                            i2cSlaveRx |= i2cSDAIn; // 接收数据位
                             i2cSlaveBitCnt++;       // 数据计数自增
                         }
-                        else // 地址已接收完，进行比对
+                        if (i2cSlaveBitCnt >= 7) // 地址已接收完，进行比对
                         {
                             if (i2cSlaveRx == (i2cSlaveAddr | i2cAddrWR)) // 比对正确，为写地址
                             {
                                 bitBandAddr((&i2cDataCFG), 0) = 1; // 选择为接收
-                                i2cState = i2cACKState;            // 切入应答收发模式
+
+                                i2cState = i2cACKState; // 切入应答收发模式
                             }
                             else if (i2cSlaveRx == (i2cSlaveAddr | i2cAddrRD)) // 比对正确，为读地址
                             {
@@ -548,12 +566,34 @@ void i2cSlaveModeResp(void)
                     }
                     else // 数据接收
                     {
+                        if (i2cSlaveBitCnt <= 7) // 数据未接收完
+                        {
+                            i2cSlaveRx <<= 1;       // 数据左移
+                            i2cSlaveRx |= i2cSDAIn; // 接收数据位
+                            i2cSlaveBitCnt++;       // 数据计数自增
+                        }
+                        if (i2cSlaveBitCnt >= 7) // 数据已接收完，进行比对
+                        {
+                            switch (i2cSlaveRx)
+                            {
+                            default: // 非法状态
+                                break;
+                            }
+
+                            i2cSlaveBitCnt = 0; // 清空数据计数
+                        }
                     }
                 }
                 break;
             }
             case i2cACKState: // 应答位
             {
+                if (bitBandAddr((&i2cDataCFG), 0)) // 本机接收应答位
+                {
+                    i2cSDAOut = bitBandAddr((&i2cDataCFG), 2); // 发送应答位
+                    bitBandAddr((&i2cDataCFG), 1) = 0;         // 选择为数据
+                    i2cState = i2cDataState;                   // 再次切入数据收发模式
+                }
                 break;
             }
             default: // 非法状态
@@ -562,7 +602,7 @@ void i2cSlaveModeResp(void)
         }
         EXTI_ClearITPendingBit(((uint32_t)(1 << i2cSCLPin))); // 清除中断标记
     }
-    else if (!EXTI_GetITStatus((uint32_t)(1 << i2cSDAPin))) // 数据线电平变化
+    else if (!EXTI_GetITStatus((uint32_t)(1 << i2cSDAPin))) // 数据线电平变化；接收开始结束信号
     {
         if (!i2cSDAIn) // SDA下降沿
         {
