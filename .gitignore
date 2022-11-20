@@ -32,6 +32,7 @@
 
 # Debugger files
 *.ini
+*.dbgconf
 
 # Other files
 *.build_log.htm
