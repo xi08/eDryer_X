@@ -7,12 +7,6 @@
 *uvgui*
 *uvproj.bak
 
-
-# Listing, Object, and Debug folder
-/Listings
-/Objects
-/DebugConfig
-
 # Legacy code file
 *_legacy*
 
