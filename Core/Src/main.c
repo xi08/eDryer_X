@@ -48,10 +48,10 @@
 
 /* USER CODE BEGIN PV */
 
-char AP_SSID[] = "eDryer_test";
+char AP_SSID[] = "";
 char AP_password[] = "";
 char Server_IP[] = "";
-uint16_t Server_port = 0;
+uint16_t Server_port = 1347;
 
 /*
 char uart1RxBuffer[65], uart1RxReg;
@@ -107,23 +107,21 @@ int main(void)
     MX_TIM4_Init();
     MX_ADC1_Init();
     /* USER CODE BEGIN 2 */
-
-    printf("at+rst\r\n");
-    HAL_Delay(1000);
+    HAL_Delay(3000);
 
     printf("at+cwjap=\"%s\",\"%s\"\r\n", AP_SSID, AP_password);
-    HAL_Delay(500);
+    HAL_Delay(5000);
 
     printf("at+cipmode=1\r\n");
-    HAL_Delay(100);
+    HAL_Delay(1000);
 
     printf("at+cipstart=\"TCP\",\"%s\",%u\r\n", Server_IP, Server_port);
-    HAL_Delay(1500);
+    HAL_Delay(10000);
 
     printf("at+cipsend\r\n");
-    HAL_Delay(100);
+    HAL_Delay(1000);
 
-    printf("Init OK");
+    printf("Init OK\r\n");
 
     // HAL_UART_Receive_IT(&huart1, (uint8_t *)uartRxReg, 1);
 
@@ -134,10 +132,12 @@ int main(void)
     while (1)
     {
         /* USER CODE END WHILE */
-
+        printf("%u\r\n", HAL_GetTick());
+        HAL_Delay(500);
         /* USER CODE BEGIN 3 */
     }
     /* USER CODE END 3 */
+    
 }
 
 /**

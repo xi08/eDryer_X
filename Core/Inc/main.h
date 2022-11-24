@@ -69,6 +69,10 @@ void Error_Handler(void);
 #define HX711_DAT_GPIO_Port GPIOB
 #define HX711_CLK_Pin GPIO_PIN_14
 #define HX711_CLK_GPIO_Port GPIOB
+#define UART1_TX_Pin GPIO_PIN_9
+#define UART1_TX_GPIO_Port GPIOA
+#define UART1_RX_Pin GPIO_PIN_10
+#define UART1_RX_GPIO_Port GPIOA
 #define LED_R_Pin GPIO_PIN_6
 #define LED_R_GPIO_Port GPIOB
 #define LED_G_Pin GPIO_PIN_7
