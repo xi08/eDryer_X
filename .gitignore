@@ -35,7 +35,7 @@
 *.dbgconf
 
 # Other files
-*.build_log.htm
+*.htm
 *.cdb
 *.dep
 *.ic
