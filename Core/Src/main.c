@@ -62,7 +62,7 @@ uint8_t uart1RxOKFlag;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
+uint8_t WLAN_Init(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -105,8 +105,7 @@ int main(void)
     MX_TIM4_Init();
     MX_ADC1_Init();
     /* USER CODE BEGIN 2 */
-    HAL_UART_Receive_IT(&huart1, (uint8_t *)&uart1RxReg, 1);
-
+    WLAN_Init();
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -139,7 +138,7 @@ void SystemClock_Config(void)
     RCC_OscInitStruct.HSIState = RCC_HSI_ON;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-    RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL2;
+    RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
     {
         Error_Handler();
@@ -150,15 +149,15 @@ void SystemClock_Config(void)
     RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
     {
         Error_Handler();
     }
     PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
-    PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV2;
+    PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV4;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
     {
         Error_Handler();
@@ -175,39 +174,45 @@ int fputc(int ch, FILE *f)
 
 uint8_t WLAN_Init(void)
 {
-    uint8_t retryTime;
-    HAL_StatusTypeDef uartStatus;
+    uint8_t retryTime = 0;
+    HAL_StatusTypeDef uartStatus = 0;
     char cmd[127];
 
     /* Restore & Restart */
     sprintf(cmd, "at+restore\r\n");
-    uartStatus = HAL_UART_Transmit(&huart1, (uint8_t *)cmd, strlen(cmd), 5 + (strlen(cmd) >> 3));
+    uartStatus = HAL_UART_Transmit(&huart1, (uint8_t *)cmd, strlen(cmd), 5 + strlen(cmd) / 10);
     HAL_Delay(1500);
+    uart1RxBufferIdx = 0;
 
     /* Command test after restore */
+    /*
     retryTime = 5;
     while (retryTime--)
     {
         sprintf(cmd, "at\r\n");
-        uartStatus = HAL_UART_Transmit(&huart1, (uint8_t *)cmd, strlen(cmd), 5 + (strlen(cmd) >> 3));
-        HAL_Delay(500);
-        if (!strcmp(uart1RxBuffer, "OK"))
+        uartStatus = HAL_UART_Transmit(&huart1, (uint8_t *)cmd, strlen(cmd), 5 + strlen(cmd) / 10);
+        HAL_Delay(1500);
+        if (!strcmp(uart1RxBuffer, "at") && uartStatus == HAL_OK)
             break;
         if (!retryTime)
             return 1;
-    }
+    }*/
 
     /* Open WiFi station mode */
     retryTime = 5;
     while (retryTime--)
     {
         sprintf(cmd, "at+cwmode=1\r\n");
-        uartStatus = HAL_UART_Transmit(&huart1, (uint8_t *)cmd, strlen(cmd), 5 + (strlen(cmd) >> 3));
-        HAL_Delay(500);
-        if (!strcmp(uart1RxBuffer, "OK"))
+        HAL_UART_Receive_IT(&huart1, (uint8_t *)uart1RxBuffer, 4);
+        uartStatus = HAL_UART_Transmit(&huart1, (uint8_t *)cmd, strlen(cmd), 5 + strlen(cmd) / 10);
+        HAL_Delay(1500);
+        
+        /*
+        if (!strcmp(uart1RxBuffer, "OK") && uartStatus == HAL_OK)
             break;
         if (!retryTime)
-            return 1;
+            return 2;
+        */
     }
 
     /* Change TCP socket to passthrough mode */
@@ -215,12 +220,16 @@ uint8_t WLAN_Init(void)
     while (retryTime--)
     {
         sprintf(cmd, "at+cipmode=1\r\n");
-        uartStatus = HAL_UART_Transmit(&huart1, (uint8_t *)cmd, strlen(cmd), 5 + (strlen(cmd) >> 3));
-        HAL_Delay(500);
-        if (!strcmp(uart1RxBuffer, "OK"))
+        HAL_UART_Receive_IT(&huart1, (uint8_t *)uart1RxBuffer, 50);
+        uartStatus = HAL_UART_Transmit(&huart1, (uint8_t *)cmd, strlen(cmd), 5 + strlen(cmd) / 10);
+        HAL_Delay(1500);
+        
+        /*
+        if (!strcmp(uart1RxBuffer, "OK") && uartStatus == HAL_OK)
             break;
         if (!retryTime)
-            return 1;
+            return 3;
+        */
     }
 
     /* Connect to the WiFi */
@@ -228,12 +237,15 @@ uint8_t WLAN_Init(void)
     while (retryTime--)
     {
         sprintf(cmd, "at+cwjap=\"%s\",\"%s\"\r\n", AP_SSID, AP_password);
-        uartStatus = HAL_UART_Transmit(&huart1, (uint8_t *)cmd, strlen(cmd), 5 + (strlen(cmd) >> 3));
-        HAL_Delay(5000);
-        if (!strcmp(uart1RxBuffer, "OK"))
+        HAL_UART_Receive_IT(&huart1, (uint8_t *)uart1RxBuffer, 50);
+        uartStatus = HAL_UART_Transmit(&huart1, (uint8_t *)cmd, strlen(cmd), 5 + strlen(cmd) / 10);
+        //HAL_Delay(15000);
+        /*
+        if (!strcmp(uart1RxBuffer, "OK") && uartStatus == HAL_OK)
             break;
         if (!retryTime)
-            return 1;
+            return 4;
+        */
     }
 
     /* Start TCP socket */
@@ -241,22 +253,25 @@ uint8_t WLAN_Init(void)
     while (retryTime--)
     {
         sprintf(cmd, "at+cipstart=\"TCP\",\"%s\",%u\r\n", Server_IP, Server_port);
-        uartStatus = HAL_UART_Transmit(&huart1, (uint8_t *)cmd, strlen(cmd), 5 + (strlen(cmd) >> 3));
-        HAL_Delay(5000);
-        if (!strcmp(uart1RxBuffer, "OK"))
+        HAL_UART_Receive_IT(&huart1, (uint8_t *)uart1RxBuffer, 50);
+        uartStatus = HAL_UART_Transmit(&huart1, (uint8_t *)cmd, strlen(cmd), 5 + strlen(cmd) / 10);
+        HAL_Delay(15000);
+        /*
+        if (!strcmp(uart1RxBuffer, "OK") && uartStatus == HAL_OK)
             break;
         if (!retryTime)
-            return 1;
+            return 5;
+        */
     }
 
     /* Start passthrough transfer */
     sprintf(cmd, "at+cipsend\r\n");
-    uartStatus = HAL_UART_Transmit(&huart1, (uint8_t *)cmd, strlen(cmd), 5 + (strlen(cmd) >> 3));
-    HAL_Delay(500);
+    uartStatus = HAL_UART_Transmit(&huart1, (uint8_t *)cmd, strlen(cmd), 5 + strlen(cmd) / 10);
+    HAL_Delay(1500);
 
     return 0;
 }
-
+/*
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     if ((huart->Instance) == USART1)
@@ -275,6 +290,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         HAL_UART_Receive_IT(&huart1, (uint8_t *)&uart1RxReg, 1);
     }
 }
+*/
 
 /* USER CODE END 4 */
 
