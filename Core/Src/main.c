@@ -41,7 +41,7 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+#define retryTime 5
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -51,11 +51,11 @@
 char AP_SSID[] = "";
 char AP_password[] = "";
 char Server_IP[] = "";
-uint16_t Server_port = 1347;
+uint16_t Server_port = 0;
 
 char uartRxBuffer[128];
 uint8_t uartRxBufferIdx = 0;
-uint8_t uartRxOKFlag;
+uint8_t uartRxOKFlag = 0;
 
 /* USER CODE END PV */
 
@@ -107,11 +107,12 @@ int main(void)
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
     MX_DMA_Init();
-    MX_USART1_UART_Init();
     MX_TIM4_Init();
     MX_ADC1_Init();
+    MX_USART1_UART_Init();
     /* USER CODE BEGIN 2 */
     WLAN_Init();
+    printf("Init OK");
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -172,87 +173,68 @@ int fputc(int ch, FILE *f)
     return ch;
 }
 
-int fgetc(FILE *f)
-{
-    while (!LL_USART_IsActiveFlag_RXNE(USART1))
-        ;
-    LL_USART_ClearFlag_RXNE(USART1);
-    return (int)LL_USART_ReceiveData8(USART1);
-}
-
 uint8_t WLAN_Init(void)
 {
-    uint8_t retryTime = 0;
-    char wlanMsg[5];
+    uint8_t retry;
 
     /* Restore & Restart */
     /* at+restore*/
     printf("at+restore\r\n");
-    LL_mDelay(500);
-
-    /* Command test after restore */
-    /* at */
-    retryTime = 5;
-
-    while (retryTime--)
-    {
-        printf("at\r\n");
-        scanf("%s", wlanMsg);
-        if ((!strcmp(wlanMsg, "at"))||(!strcmp(wlanMsg, "AT")))
-            break;
-        if (!retryTime)
-            return 1;
-    }
+    LL_mDelay(3500);
 
     /* Open WiFi station mode */
     /* at+cwmode=1 */
-    retryTime = 5;
-    while (retryTime--)
+    retry = retryTime;
+    while (retry--)
     {
         printf("at+cwmode=1\r\n");
-        scanf("%s", wlanMsg);
-        if ((!strcmp(wlanMsg, "ok"))||(!strcmp(wlanMsg, "OK")))
+        LL_mDelay(500);
+
+        if ((!strcmp(uartRxBuffer, "ok")) || (!strcmp(uartRxBuffer, "OK")))
             break;
-        if (!retryTime)
+        if (!retry)
             return 2;
     }
 
     /* Change TCP socket to passthrough mode */
     /* at+cipmode=1 */
-    retryTime = 5;
-    while (retryTime--)
+    retry = 5;
+    while (retry--)
     {
         printf("at+cipmode=1\r\n");
-        scanf("%s", wlanMsg);
-        if ((!strcmp(wlanMsg, "ok"))||(!strcmp(wlanMsg, "OK")))
+        LL_mDelay(500);
+
+        if ((!strcmp(uartRxBuffer, "ok")) || (!strcmp(uartRxBuffer, "OK")))
             break;
-        if (!retryTime)
+        if (!retry)
             return 3;
     }
 
     /* Connect to the WiFi */
     /* at+cwjap="%AP_SSID","%AP_password" */
-    retryTime = 5;
-    while (retryTime--)
+    retry = 5;
+    while (retry--)
     {
         printf("at+cwjap=\"%s\",\"%s\"\r\n", AP_SSID, AP_password);
-        scanf("%s%s%s%s%s%s", NULL, NULL, NULL, NULL, NULL, wlanMsg);
-       if ((!strcmp(wlanMsg, "ok"))||(!strcmp(wlanMsg, "OK")))
+        LL_mDelay(2500);
+
+        if ((!strcmp(uartRxBuffer, "ok")) || (!strcmp(uartRxBuffer, "OK")))
             break;
-        if (!retryTime)
+        if (!retry)
             return 4;
     }
 
     /* Start TCP socket */
     /* at+cipstart="TCP","%Server_IP",%Server_port */
-    retryTime = 5;
-    while (retryTime--)
+    retry = 5;
+    while (retry--)
     {
-        printf("at+cipstart=\"TCP\",\"%s\",\"%s\"\r\n", Server_IP, Server_port);
-        scanf("%s%s", NULL, wlanMsg);
-        if ((!strcmp(wlanMsg, "ok"))||(!strcmp(wlanMsg, "OK")))
+        printf("at+cipstart=\"TCP\",\"%s\",%u\r\n", Server_IP, Server_port);
+        LL_mDelay(2500);
+
+        if ((!strcmp(uartRxBuffer, "ok")) || (!strcmp(uartRxBuffer, "OK")))
             break;
-        if (!retryTime)
+        if (!retry)
             return 5;
     }
 
@@ -264,13 +246,13 @@ uint8_t WLAN_Init(void)
     return 0;
 }
 
-void uart_ReceiveIRQ(void)
+inline void uart_ReceiveIRQ(void)
 {
     uint8_t ch = LL_USART_ReceiveData8(USART1);
 
-    if (uartRxBuffer[uartRxBufferIdx] == (uint8_t)('\r') && ch == (uint8_t)('\n'))
+    if (uartRxBuffer[uartRxBufferIdx - 1] == (uint8_t)('\r') && ch == (uint8_t)('\n'))
     {
-        uartRxBuffer[uartRxBufferIdx] = 0;
+        uartRxBuffer[uartRxBufferIdx - 1] = 0;
         uartRxBufferIdx = 0;
         uartRxOKFlag = 1;
     }

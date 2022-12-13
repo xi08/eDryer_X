@@ -45,22 +45,22 @@ void MX_USART1_UART_Init(void)
   PA9   ------> USART1_TX
   PA10   ------> USART1_RX
   */
-  GPIO_InitStruct.Pin = UART1_TX_Pin;
+  GPIO_InitStruct.Pin = TXD1_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  LL_GPIO_Init(UART1_TX_GPIO_Port, &GPIO_InitStruct);
+  LL_GPIO_Init(TXD1_GPIO_Port, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = UART1_RX_Pin;
+  GPIO_InitStruct.Pin = RXD1_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_FLOATING;
-  LL_GPIO_Init(UART1_RX_GPIO_Port, &GPIO_InitStruct);
+  LL_GPIO_Init(RXD1_GPIO_Port, &GPIO_InitStruct);
 
   /* USART1 interrupt Init */
   NVIC_SetPriority(USART1_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),1, 0));
   NVIC_EnableIRQ(USART1_IRQn);
 
   /* USER CODE BEGIN USART1_Init 1 */
-
+  LL_USART_EnableIT_RXNE(USART1);
   /* USER CODE END USART1_Init 1 */
   USART_InitStruct.BaudRate = 115200;
   USART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;
