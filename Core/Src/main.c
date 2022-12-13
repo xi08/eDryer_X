@@ -198,7 +198,7 @@ uint8_t WLAN_Init(void)
     {
         printf("at\r\n");
         scanf("%s", wlanMsg);
-        if (!strcmp(wlanMsg, "at"))
+        if ((!strcmp(wlanMsg, "at"))||(!strcmp(wlanMsg, "AT")))
             break;
         if (!retryTime)
             return 1;
@@ -211,7 +211,7 @@ uint8_t WLAN_Init(void)
     {
         printf("at+cwmode=1\r\n");
         scanf("%s", wlanMsg);
-        if (!strcmp(wlanMsg, "ok"))
+        if ((!strcmp(wlanMsg, "ok"))||(!strcmp(wlanMsg, "OK")))
             break;
         if (!retryTime)
             return 2;
@@ -224,7 +224,7 @@ uint8_t WLAN_Init(void)
     {
         printf("at+cipmode=1\r\n");
         scanf("%s", wlanMsg);
-        if (!strcmp(wlanMsg, "ok"))
+        if ((!strcmp(wlanMsg, "ok"))||(!strcmp(wlanMsg, "OK")))
             break;
         if (!retryTime)
             return 3;
@@ -236,8 +236,8 @@ uint8_t WLAN_Init(void)
     while (retryTime--)
     {
         printf("at+cwjap=\"%s\",\"%s\"\r\n", AP_SSID, AP_password);
-        scanf("%s%s%s%s%s", NULL, NULL, NULL, NULL, wlanMsg);
-        if (!strcmp(wlanMsg, "ok"))
+        scanf("%s%s%s%s%s%s", NULL, NULL, NULL, NULL, NULL, wlanMsg);
+       if ((!strcmp(wlanMsg, "ok"))||(!strcmp(wlanMsg, "OK")))
             break;
         if (!retryTime)
             return 4;
@@ -249,8 +249,8 @@ uint8_t WLAN_Init(void)
     while (retryTime--)
     {
         printf("at+cipstart=\"TCP\",\"%s\",\"%s\"\r\n", Server_IP, Server_port);
-        scanf("%s%s%s%s%s", NULL, NULL, NULL, NULL, wlanMsg);
-        if (!strcmp(wlanMsg, "ok"))
+        scanf("%s%s", NULL, wlanMsg);
+        if ((!strcmp(wlanMsg, "ok"))||(!strcmp(wlanMsg, "OK")))
             break;
         if (!retryTime)
             return 5;
