@@ -37,11 +37,14 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define retryTime 5
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-#define retryTime 5
+#define DHT11_PIN_OUT_H (LL_GPIO_SetOutputPin(DHT11_IO_GPIO_Port, DHT11_IO_Pin))
+#define DHT11_PIN_OUT_L (LL_GPIO_ResetOutputPin(DHT11_IO_GPIO_Port, DHT11_IO_Pin))
+#define DHT11_PIN_INPUT (LL_GPIO_IsInputPinSet(DHT11_IO_GPIO_Port, DHT11_IO_Pin))
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -63,6 +66,7 @@ uint8_t uartRxOKFlag = 0;
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 uint8_t WLAN_Init(void);
+void delay_2us(uint32_t _time);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -110,6 +114,7 @@ int main(void)
     MX_TIM4_Init();
     MX_ADC1_Init();
     MX_USART1_UART_Init();
+    MX_TIM3_Init();
     /* USER CODE BEGIN 2 */
     WLAN_Init();
     printf("Init OK");
@@ -173,6 +178,11 @@ int fputc(int ch, FILE *f)
     return ch;
 }
 
+/**
+ * @brief WiFi Module Initialization
+ *
+ * @return uint8_t Error Type
+ */
 uint8_t WLAN_Init(void)
 {
     uint8_t retry;
@@ -246,7 +256,87 @@ uint8_t WLAN_Init(void)
     return 0;
 }
 
-inline void uart_ReceiveIRQ(void)
+/**
+ * @brief DHT11 Module Initialization
+ *
+ * @return uint8_t Error Type
+ */
+uint8_t DHT11_Init(void)
+{
+    uint8_t retry;
+
+    /* Reset Bus */
+    DHT11_PIN_OUT_L;
+    LL_mDelay(20);
+    DHT11_PIN_OUT_H;
+    delay_2us(15);
+
+    /* Check the device */
+    retry = 0;
+    while (DHT11_PIN_INPUT && retry < 25)
+    {
+        retry++;
+        delay_2us(1);
+    };
+    if (retry >= 100)
+        return 1;
+    else
+        retry = 0;
+    while (!DHT11_PIN_INPUT && retry < 25)
+    {
+        retry++;
+        delay_2us(1);
+    };
+    if (retry >= 25)
+        return 1;
+    return 0;
+}
+
+/**
+ * @brief DHT11 Module Receive Data
+ * 
+ * @param temp Tempreutare
+ * @param humi Humidity
+ * @return uint8_t Error Type
+ */
+uint8_t DHT11_Read(char *temp, char *humi)
+{
+    uint8_t retry;
+    uint8_t datIdx, binIdx, dat[5];
+    for (datIdx = 0; datIdx < 5; datIdx++)
+    {
+        for (binIdx = 0; binIdx < 8; binIdx++)
+        {
+            dat[datIdx] <<= 1;
+            retry = 0;
+            while (DHT11_PIN_INPUT && retry < 28)
+            {
+                retry++;
+                delay_2us(1);
+            }
+            retry = 0;
+            while (!DHT11_PIN_INPUT && retry < 28)
+            {
+                retry++;
+                delay_2us(1);
+            }
+            delay_2us(20);
+            dat[datIdx] |= DHT11_PIN_INPUT;
+        }
+    }
+    if ((dat[0] + dat[1] + dat[2] + dat[3]) == dat[4])
+    {
+        *humi = dat[0];
+        *temp = dat[2];
+    }
+    return 0;
+}
+
+/**
+ * @brief UART Variable Length Receive Interupt Response
+ *
+ */
+void uart_ReceiveIRQ(void)
 {
     uint8_t ch = LL_USART_ReceiveData8(USART1);
 
@@ -258,6 +348,22 @@ inline void uart_ReceiveIRQ(void)
     }
     else
         uartRxBuffer[uartRxBufferIdx++] = ch;
+}
+
+/**
+ * @brief Accurate delay in microseconds based on TIM3 update flag
+ *
+ * @param _time Delay time in microseconds
+ */
+void delay_2us(uint32_t _time)
+{
+    while (_time--)
+    {
+        LL_TIM_ClearFlag_UPDATE(TIM3);
+        LL_TIM_EnableCounter(TIM3);
+        while (!LL_TIM_IsActiveFlag_UPDATE(TIM3)) // 等待
+            ;
+    }
 }
 
 /* USER CODE END 4 */
