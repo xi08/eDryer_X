@@ -42,23 +42,26 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-#define DHT11_PIN_OUT_H (LL_GPIO_SetOutputPin(DHT11_IO_GPIO_Port, DHT11_IO_Pin))
-#define DHT11_PIN_OUT_L (LL_GPIO_ResetOutputPin(DHT11_IO_GPIO_Port, DHT11_IO_Pin))
-#define DHT11_PIN_INPUT (LL_GPIO_IsInputPinSet(DHT11_IO_GPIO_Port, DHT11_IO_Pin))
+#define DHT11_IN (LL_GPIO_IsInputPinSet(DHT11_IO_GPIO_Port, DHT11_IO_Pin))
+#define delay_sec(x) (LL_mDelay(x * 1000))
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
 
-char AP_SSID[] = "";
-char AP_password[] = "";
-char Server_IP[] = "";
-uint16_t Server_port = 0;
+const char AP_SSID[] = "";
+const char AP_password[] = "";
+const char Server_IP[] = "";
+const uint16_t Server_port = 0;
+
+uint8_t errCode = 0;
 
 char uartRxBuffer[128];
 uint8_t uartRxBufferIdx = 0;
 uint8_t uartRxOKFlag = 0;
+
+float dht11_tem, dht11_hum;
 
 /* USER CODE END PV */
 
@@ -67,6 +70,9 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 uint8_t WLAN_Init(void);
 void delay_2us(uint32_t _time);
+
+uint8_t DHT11_Init(void);
+uint8_t DHT11_Read(float *temp, float *humi);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -116,7 +122,7 @@ int main(void)
     MX_USART1_UART_Init();
     MX_TIM3_Init();
     /* USER CODE BEGIN 2 */
-    WLAN_Init();
+    // WLAN_Init();
     printf("Init OK");
     /* USER CODE END 2 */
 
@@ -124,6 +130,10 @@ int main(void)
     /* USER CODE BEGIN WHILE */
     while (1)
     {
+        errCode = DHT11_Read(&dht11_tem, &dht11_hum);
+        if (!errCode)
+            printf("%.2lf,%.2lf", dht11_tem, dht11_hum);
+        delay_sec(3);
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
@@ -257,78 +267,54 @@ uint8_t WLAN_Init(void)
 }
 
 /**
- * @brief DHT11 Module Initialization
- *
- * @return uint8_t Error Type
- */
-uint8_t DHT11_Init(void)
-{
-    uint8_t retry;
-
-    /* Reset Bus */
-    DHT11_PIN_OUT_L;
-    LL_mDelay(20);
-    DHT11_PIN_OUT_H;
-    delay_2us(15);
-
-    /* Check the device */
-    retry = 0;
-    while (DHT11_PIN_INPUT && retry < 25)
-    {
-        retry++;
-        delay_2us(1);
-    };
-    if (retry >= 100)
-        return 1;
-    else
-        retry = 0;
-    while (!DHT11_PIN_INPUT && retry < 25)
-    {
-        retry++;
-        delay_2us(1);
-    };
-    if (retry >= 25)
-        return 1;
-    return 0;
-}
-
-/**
  * @brief DHT11 Module Receive Data
- * 
+ *
  * @param temp Tempreutare
  * @param humi Humidity
  * @return uint8_t Error Type
  */
-uint8_t DHT11_Read(char *temp, char *humi)
+uint8_t DHT11_Read(float *temp, float *humi)
 {
     uint8_t retry;
     uint8_t datIdx, binIdx, dat[5];
+
+    /* Init Bus */
+    LL_GPIO_SetOutputPin(DHT11_IO_GPIO_Port, DHT11_IO_Pin);
+    delay_sec(1);
+    LL_GPIO_ResetOutputPin(DHT11_IO_GPIO_Port, DHT11_IO_Pin);
+    LL_mDelay(24);
+    LL_GPIO_SetOutputPin(DHT11_IO_GPIO_Port, DHT11_IO_Pin);
+    delay_2us(15);
+
+    /* Device Detect */
+    if (DHT11_IN)
+        return 2;
+    while (!DHT11_IN)
+        ;
+    while (DHT11_IN)
+        ;
+
+    /* Data Transfer */
     for (datIdx = 0; datIdx < 5; datIdx++)
     {
         for (binIdx = 0; binIdx < 8; binIdx++)
         {
             dat[datIdx] <<= 1;
-            retry = 0;
-            while (DHT11_PIN_INPUT && retry < 28)
-            {
-                retry++;
-                delay_2us(1);
-            }
-            retry = 0;
-            while (!DHT11_PIN_INPUT && retry < 28)
-            {
-                retry++;
-                delay_2us(1);
-            }
+            while (!DHT11_IN)
+                ;
             delay_2us(20);
-            dat[datIdx] |= DHT11_PIN_INPUT;
+            dat[datIdx] |= DHT11_IN;
+            while (DHT11_IN)
+                ;
         }
     }
     if ((dat[0] + dat[1] + dat[2] + dat[3]) == dat[4])
     {
-        *humi = dat[0];
-        *temp = dat[2];
+        (*humi) = (1.0 * dat[0]);
+        (*temp) = (1.0 * dat[2] + 0.01 * dat[3]);
     }
+    else
+        return 1;
     return 0;
 }
 
@@ -357,6 +343,7 @@ void uart_ReceiveIRQ(void)
  */
 void delay_2us(uint32_t _time)
 {
+
     while (_time--)
     {
         LL_TIM_ClearFlag_UPDATE(TIM3);

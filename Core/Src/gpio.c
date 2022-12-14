@@ -53,7 +53,10 @@ void MX_GPIO_Init(void)
   LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOB);
 
   /**/
-  LL_GPIO_ResetOutputPin(GPIOB, DHT11_IO_Pin|HX711_CLK_Pin);
+  LL_GPIO_SetOutputPin(DHT11_IO_GPIO_Port, DHT11_IO_Pin);
+
+  /**/
+  LL_GPIO_ResetOutputPin(HX711_CLK_GPIO_Port, HX711_CLK_Pin);
 
   /**/
   GPIO_InitStruct.Pin = LL_GPIO_PIN_13;
