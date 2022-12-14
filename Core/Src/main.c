@@ -122,7 +122,7 @@ int main(void)
     MX_USART1_UART_Init();
     MX_TIM3_Init();
     /* USER CODE BEGIN 2 */
-    // WLAN_Init();
+    WLAN_Init();
     printf("Init OK");
     /* USER CODE END 2 */
 
@@ -132,7 +132,7 @@ int main(void)
     {
         errCode = DHT11_Read(&dht11_tem, &dht11_hum);
         if (!errCode)
-            printf("%.2lf,%.2lf", dht11_tem, dht11_hum);
+            printf("T=%.2lf,H=%.2lf", dht11_tem, dht11_hum);
         delay_sec(3);
         /* USER CODE END WHILE */
 
@@ -348,7 +348,7 @@ void delay_2us(uint32_t _time)
     {
         LL_TIM_ClearFlag_UPDATE(TIM3);
         LL_TIM_EnableCounter(TIM3);
-        while (!LL_TIM_IsActiveFlag_UPDATE(TIM3)) // 等待
+        while (!LL_TIM_IsActiveFlag_UPDATE(TIM3))
             ;
     }
 }
