@@ -32,7 +32,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+typedef uint8_t errCodeType;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -55,7 +55,7 @@ const char AP_password[] = "";
 const char Server_IP[] = "";
 const uint16_t Server_port = 0;
 
-uint8_t errCode = 0;
+errCodeType errCode = 0;
 
 char uartRxBuffer[128];
 uint8_t uartRxBufferIdx = 0;
@@ -193,7 +193,7 @@ int fputc(int ch, FILE *f)
  *
  * @return uint8_t Error Type
  */
-uint8_t WLAN_Init(void)
+errCodeType WLAN_Init(void)
 {
     uint8_t retry;
 
@@ -273,7 +273,7 @@ uint8_t WLAN_Init(void)
  * @param humi Humidity
  * @return uint8_t Error Type
  */
-uint8_t DHT11_Read(float *temp, float *humi)
+errCodeType DHT11_Read(float *temp, float *humi)
 {
     uint8_t retry;
     uint8_t datIdx, binIdx, dat[5];
