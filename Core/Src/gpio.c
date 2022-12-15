@@ -59,7 +59,7 @@ void MX_GPIO_Init(void)
   LL_GPIO_ResetOutputPin(HX711_CLK_GPIO_Port, HX711_CLK_Pin);
 
   /**/
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_13;
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_13|LL_GPIO_PIN_14|LL_GPIO_PIN_15;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ANALOG;
   LL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
